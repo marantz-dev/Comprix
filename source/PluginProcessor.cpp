@@ -42,7 +42,6 @@ void comprixAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer,
     AudioBuffer<float> &mainSource = mainBuffer;
     AudioBuffer<float> &externalSource = sidechainBuffer;
 
-    filter.processBlock(sidechainBuffer, numSamples);
     auxBuffer.clear();
     if(useExternalSidechain) {
         int sourceChannels = externalSource.getNumChannels();
@@ -56,10 +55,11 @@ void comprixAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer,
             auxBuffer.addFrom(0, 0, mainSource, ch, 0, numSamples, 1.0f / sourceChannels);
         }
     }
+    filter.processBlock(auxBuffer, numSamples);
 
     if(sidechainListen) {
         for(int ch = 0; ch < numChannels; ++ch) {
-            mainBuffer.copyFrom(ch, 0, sidechainBuffer, ch, 0, numSamples);
+            mainBuffer.copyFrom(ch, 0, auxBuffer, 0, 0, numSamples);
         }
     } else {
         compressor.processBlock(mainBuffer, auxBuffer);

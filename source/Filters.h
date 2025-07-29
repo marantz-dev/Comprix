@@ -1,6 +1,5 @@
 #pragma once
 #include <JuceHeader.h>
-#include <juce_dsp/juce_dsp.h>
 #define MAX_NUM_CHANNELS 2
 class StereoFilter {
   public:
