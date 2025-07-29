@@ -15,6 +15,8 @@ namespace Parameters {
     static const String nameFilterCutoff = "FC";
     static const String nameFilterQuality = "FQ";
     static const String nameFilterType = "FT";
+    static const String nameFilterSwitch = "FB";
+    static const String nameDryWet = "DWR";
 
     static const float defaultAmount = 1.0f;
     static const float defaultMakeup = 0.0f;
@@ -28,6 +30,7 @@ namespace Parameters {
     static const float defaultFilterCutoff = 1000.0f; // in Hz
     static const float defaultFilterQuality = 1.0f;   // Q
     static const float defaultFilterType = 0.0f;      // 0 for LowPass, 1 for HighPass, 2 for Band
+    static const float defaultDryWet = 100.0f;        // in percent
 
     static const float maxRmsTime = 0.5f;
     static const float minRmsTime = 0.01f;
@@ -47,6 +50,8 @@ namespace Parameters {
     static const float maxFilterCutoff = 20000.0f; // in Hz
     static const float minFilterQuality = 0.1f;    // Q factor
     static const float maxFilterQuality = 10.0f;   // Q factor
+    static const float minDryWet = 0.0f;           // in percent
+    static const float maxDryWet = 100.0f;         // in percent
 
     static AudioProcessorValueTreeState::ParameterLayout createParameterLayout() {
         std::vector<std::unique_ptr<RangedAudioParameter>> params;
@@ -89,6 +94,8 @@ namespace Parameters {
         params.push_back(std::make_unique<AudioParameterChoice>(
          ParameterID(nameFilterType, id++), "Filter Type",
          StringArray{"LowPass", "HighPass", "BandPass"}, defaultFilterType));
+        params.push_back(std::make_unique<AudioParameterBool>(ParameterID(nameFilterSwitch, id++),
+                                                              "Filter ON/OFF", false));
 
         params.push_back(
          std::make_unique<AudioParameterBool>(ParameterID("SCB", id++), "Sidechain ON/OF", false));
@@ -98,6 +105,9 @@ namespace Parameters {
 
         params.push_back(std::make_unique<AudioParameterChoice>(
          ParameterID(nameDetector, id++), "Detector", StringArray{"RMS", "Peak"}, defaultDetector));
+        params.push_back(std::make_unique<AudioParameterFloat>(
+         ParameterID(nameDryWet, id++), "Dry/Wet (%)",
+         NormalisableRange<float>(minDryWet, maxDryWet, 0.1f), defaultDryWet));
 
         return {params.begin(), params.end()};
     }

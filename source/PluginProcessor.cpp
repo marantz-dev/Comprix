@@ -22,11 +22,13 @@ void comprixAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock
     auxBuffer.setSize(1, samplesPerBlock);
     auxBuffer.clear();
     filter.prepareToPlay(sampleRate);
+    drywetter.prepareToPlay(sampleRate, samplesPerBlock);
 }
 
 void comprixAudioProcessor::releaseResources() {
     compressor.releaseResources();
     auxBuffer.setSize(0, 0); // Clear the aux buffer
+    drywetter.releaseResources();
 }
 
 void comprixAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer,
@@ -54,6 +56,9 @@ void comprixAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer,
         }
     }
 
+    if(filterEnabled) {
+        filter.processBlock(auxBuffer, numSamples);
+    }
     filter.processBlock(auxBuffer, numSamples);
 
     if(sidechainListen) {
@@ -61,7 +66,9 @@ void comprixAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer,
             mainBuffer.copyFrom(ch, 0, auxBuffer, 0, 0, numSamples);
         }
     } else {
+        drywetter.copyDrySignal(mainBuffer);
         compressor.processBlock(mainBuffer, auxBuffer);
+        drywetter.mixDrySignal(mainBuffer);
     }
 }
 
@@ -144,6 +151,10 @@ void comprixAudioProcessor::parameterChanged(const String &paramID, float newVal
         case 2: filter.setFilterType(BandPass); break;
         default: filter.setFilterType(LowPass); // Fallback to Low Pass
         }
+    } else if(paramID == Parameters::nameFilterSwitch) {
+        filterEnabled = newValue > 0.5f;
+    } else if(paramID == Parameters::nameDryWet) {
+        drywetter.setDWRatio(newValue);
     }
 }
 
