@@ -1,6 +1,7 @@
 #pragma once
 #include <JuceHeader.h>
 #include "DynamicProcessors.h"
+#include "Filters.h"
 
 class comprixAudioProcessor : public juce::AudioProcessor,
                               public AudioProcessorValueTreeState::Listener {
@@ -53,6 +54,9 @@ class comprixAudioProcessor : public juce::AudioProcessor,
 
     AnalogCompressor compressor;
     AudioBuffer<float> auxBuffer;
+    bool useExternalSidechain = false;
+    bool sidechainListen = false;
+    StereoFilter filter;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(comprixAudioProcessor)

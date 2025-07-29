@@ -3,13 +3,17 @@
 #include <JuceHeader.h>
 
 namespace Parameters {
-    static const String nameSidechainSwitch = "SCS";
+    static const String nameSidechainSwitch = "SCB";
+    static const String nameSidechainListen = "SCL";
     static const String nameAttack = "ATK";
     static const String nameRelease = "REL";
     static const String nameThreshold = "THR";
     static const String nameRatio = "RAT";
     static const String nameMakeup = "MU";
     static const String nameDetector = "DET";
+    static const String nameKnee = "KNE";
+    static const String nameFilterCutoff = "FC";
+    static const String nameFilterQuality = "FQ";
 
     static const float defaultAmount = 1.0f;
     static const float defaultMakeup = 0.0f;
@@ -18,7 +22,10 @@ namespace Parameters {
     static const float defaultAttack = 1.0f;
     static const float defaultRelease = 30.0f;
     static const float defaultRatio = 4.0f;
-    static const float defaultDetector = 0.0f; // 0 for RMS, 1 for Peak
+    static const float defaultDetector = 0.0f;        // 0 for RMS, 1 for Peak
+    static const float defaultKnee = 6.0f;            // in dB
+    static const float defaultFilterCutoff = 1000.0f; // in Hz
+    static const float defaultFilterQuality = 1.0f;   // Q
 
     static const float maxRmsTime = 0.5f;
     static const float minRmsTime = 0.01f;
@@ -32,6 +39,12 @@ namespace Parameters {
     static const float maxThreshold = 6.0f;
     static const float minRatio = 1.0f;
     static const float maxRatio = 20.0f;
+    static const float minKnee = 0.01f;
+    static const float maxKnee = 36.0f;
+    static const float minFilterCutoff = 20.0f;    // in Hz
+    static const float maxFilterCutoff = 20000.0f; // in Hz
+    static const float minFilterQuality = 0.1f;    // Q factor
+    static const float maxFilterQuality = 10.0f;   // Q factor
 
     static AudioProcessorValueTreeState::ParameterLayout createParameterLayout() {
         std::vector<std::unique_ptr<RangedAudioParameter>> params;
@@ -55,11 +68,28 @@ namespace Parameters {
          NormalisableRange<float>(minRatio, maxRatio, 0.1f, 0.5f), defaultRatio));
 
         params.push_back(std::make_unique<AudioParameterFloat>(
+         ParameterID(nameKnee, id++), "Knee Width (dB)",
+         NormalisableRange<float>(minKnee, maxKnee, 0.01f, 0.5f), defaultKnee));
+
+        params.push_back(std::make_unique<AudioParameterFloat>(
          ParameterID(nameMakeup, id++), "Makeup (dB)",
          NormalisableRange<float>(minMakeup, maxMakeup, 0.1f), defaultMakeup));
 
+        params.push_back(std::make_unique<AudioParameterFloat>(
+         ParameterID(nameFilterCutoff, id++), "Filter Cutoff (Hz)",
+         NormalisableRange<float>(minFilterCutoff, maxFilterCutoff, 1.0f, 0.5f),
+         defaultFilterCutoff));
+
+        params.push_back(std::make_unique<AudioParameterFloat>(
+         ParameterID(nameFilterQuality, id++), "Filter Quality (Q)",
+         NormalisableRange<float>(minFilterQuality, maxFilterQuality, 0.01f, 0.5f),
+         defaultFilterQuality));
+
         params.push_back(
          std::make_unique<AudioParameterBool>(ParameterID("SCB", id++), "Sidechain ON/OF", false));
+
+        params.push_back(
+         std::make_unique<AudioParameterBool>(ParameterID("SCL", id++), "Sidechain Listen", false));
 
         params.push_back(std::make_unique<AudioParameterChoice>(
          ParameterID(nameDetector, id++), "Detector", StringArray{"RMS", "Peak"}, defaultDetector));

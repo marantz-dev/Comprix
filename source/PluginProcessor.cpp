@@ -1,7 +1,6 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 #include "PluginParameters.h"
-#include <cstdio>
 
 //==============================================================================
 comprixAudioProcessor::comprixAudioProcessor()
@@ -22,6 +21,7 @@ void comprixAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock
     compressor.prepareToPlay(sampleRate);
     auxBuffer.setSize(1, samplesPerBlock);
     auxBuffer.clear();
+    filter.prepareToPlay(sampleRate);
 }
 
 void comprixAudioProcessor::releaseResources() {
@@ -32,20 +32,38 @@ void comprixAudioProcessor::releaseResources() {
 void comprixAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer,
                                          juce::MidiBuffer &midiMessages) {
     juce::ScopedNoDenormals noDenormals;
-
     auto mainBuffer = getBusBuffer(buffer, true, 0);
     auto sidechainBuffer = getBusBuffer(buffer, true, 1);
     auto numSamples = buffer.getNumSamples();
     auto numChannels = mainBuffer.getNumChannels();
 
-    // TODO: Fix sidechain handling
-    AudioBuffer<float> &scSource = mainBuffer;
+    // Try reading the parameter differently
+
+    AudioBuffer<float> &mainSource = mainBuffer;
+    AudioBuffer<float> &externalSource = sidechainBuffer;
+
+    filter.processBlock(sidechainBuffer, numSamples);
     auxBuffer.clear();
+    if(useExternalSidechain) {
+        int sourceChannels = externalSource.getNumChannels();
+        for(int ch = 0; ch < sourceChannels; ++ch) {
+            auxBuffer.addFrom(0, 0, externalSource, ch, 0, numSamples, 1.0f / sourceChannels);
+        }
 
-    for(int ch = 0; ch < numChannels; ++ch)
-        auxBuffer.addFrom(0, 0, scSource, ch, 0, numSamples, 1.0 / numChannels);
+    } else {
+        int sourceChannels = mainSource.getNumChannels();
+        for(int ch = 0; ch < sourceChannels; ++ch) {
+            auxBuffer.addFrom(0, 0, mainSource, ch, 0, numSamples, 1.0f / sourceChannels);
+        }
+    }
 
-    compressor.processBlock(mainBuffer, auxBuffer);
+    if(sidechainListen) {
+        for(int ch = 0; ch < numChannels; ++ch) {
+            mainBuffer.copyFrom(ch, 0, sidechainBuffer, ch, 0, numSamples);
+        }
+    } else {
+        compressor.processBlock(mainBuffer, auxBuffer);
+    }
 }
 
 bool comprixAudioProcessor::hasEditor() const {
@@ -96,8 +114,30 @@ void comprixAudioProcessor::parameterChanged(const String &paramID, float newVal
         compressor.setRatio(newValue);
     } else if(paramID == Parameters::nameMakeup) {
         compressor.setMakeupGain(newValue);
-    } else if(paramID == "SCB") {
-        // Handle sidechain toggle
+    } else if(paramID == Parameters::nameSidechainSwitch) {
+        useExternalSidechain = newValue > 0.5f;
+    } else if(paramID == Parameters::nameSidechainListen) {
+        sidechainListen = newValue > 0.5f;
+    } else if(paramID == Parameters::nameDetector) {
+        int detectorIndex = static_cast<int>(newValue);
+
+        switch(detectorIndex) {
+        case 0: compressor.setDetectorType(RMS); break;
+        case 1: compressor.setDetectorType(Peak); break;
+        // Future detector types:
+        // case 2:
+        //     compressor.setDetectorType(Envelope);
+        //     break;
+        default:
+            compressor.setDetectorType(RMS); // Fallback to RMS
+            break;
+        }
+    } else if(paramID == Parameters::nameKnee) {
+        compressor.setKneeWidth(newValue);
+    } else if(paramID == Parameters::nameFilterCutoff) {
+        filter.setFrequency(newValue);
+    } else if(paramID == Parameters::nameFilterQuality) {
+        filter.setQuality(newValue);
     }
 }
 
