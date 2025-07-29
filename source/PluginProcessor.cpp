@@ -37,8 +37,6 @@ void comprixAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer,
     auto numSamples = buffer.getNumSamples();
     auto numChannels = mainBuffer.getNumChannels();
 
-    // Try reading the parameter differently
-
     AudioBuffer<float> &mainSource = mainBuffer;
     AudioBuffer<float> &externalSource = sidechainBuffer;
 
@@ -55,6 +53,7 @@ void comprixAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer,
             auxBuffer.addFrom(0, 0, mainSource, ch, 0, numSamples, 1.0f / sourceChannels);
         }
     }
+
     filter.processBlock(auxBuffer, numSamples);
 
     if(sidechainListen) {
@@ -67,12 +66,11 @@ void comprixAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer,
 }
 
 bool comprixAudioProcessor::hasEditor() const {
-    return false; // (change this to false if you choose to not supply an editor)
+    return true; // (change this to false if you choose to not supply an editor)
 }
 
 juce::AudioProcessorEditor *comprixAudioProcessor::createEditor() {
-    // return new comprixAudioProcessorEditor(*this);
-    return nullptr;
+    return new comprixAudioProcessorEditor(*this);
 }
 
 void comprixAudioProcessor::getStateInformation(juce::MemoryBlock &destData) {
@@ -138,6 +136,14 @@ void comprixAudioProcessor::parameterChanged(const String &paramID, float newVal
         filter.setFrequency(newValue);
     } else if(paramID == Parameters::nameFilterQuality) {
         filter.setQuality(newValue);
+    } else if(paramID == Parameters::nameFilterType) {
+        int filterTypeIndex = static_cast<int>(newValue);
+        switch(filterTypeIndex) {
+        case 0: filter.setFilterType(LowPass); break;
+        case 1: filter.setFilterType(HighPass); break;
+        case 2: filter.setFilterType(BandPass); break;
+        default: filter.setFilterType(LowPass); // Fallback to Low Pass
+        }
     }
 }
 
