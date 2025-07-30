@@ -6,35 +6,13 @@
 #pragma clang diagnostic ignored "-Wimplicit-int-float-conversion"
 comprixAudioProcessorEditor::comprixAudioProcessorEditor(comprixAudioProcessor &p,
                                                          AudioProcessorValueTreeState &vts)
-    : AudioProcessorEditor(&p), audioProcessor(p), valueTreeState(vts), sidechainSection(vts) {
+    : AudioProcessorEditor(&p), audioProcessor(p), valueTreeState(vts), sidechainSection(vts),
+      compressorSection(vts) {
+    // meterSection(vts), scopeSection(vts), scopeControlsSection(vts) {
     sidechainGainSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
 
     addAndMakeVisible(sidechainSection);
-    // addAndMakeVisible(sidechainSectionBorder);
-    // sidechainSectionBorder.setText("Sidechain");
-    //
-    // addAndMakeVisible(compressorSectionBorder);
-    // compressorSectionBorder.setText("Compressor");
-    //
-    // addAndMakeVisible(meterSectionBorder);
-    // meterSectionBorder.setText("Metering");
-    //
-    // addAndMakeVisible(scopeSectionBorder);
-    // scopeSectionBorder.setText("Scope");
-    //
-    // addAndMakeVisible(scopeControlsBorder);
-    // scopeControlsBorder.setText("Scope Controls");
-    //
-    // addAndMakeVisible(sidechainGainSlider);
-    //
-    // addAndMakeVisible(externalSidechainButton);
-    // externalSidechainButton.setButtonText("Sidechain");
-    // externalSidechainButton.setClickingTogglesState(true);
-    // externalSidechainButton.changeWidthToFitText();
-    //
-    // addAndMakeVisible(sidechainListenButton);
-    // sidechainListenButton.setButtonText("Listen");
-    // sidechainListenButton.setClickingTogglesState(true);
+    addAndMakeVisible(compressorSection);
 
     setSize(1200, 800);
 }
@@ -70,26 +48,12 @@ void comprixAudioProcessorEditor::resized() {
     sidechainSectionBounds.removeFromRight(topSectionBounds.getWidth() * 0.75f + 7);
     sidechainSection.setBounds(sidechainSectionBounds);
     sidechainSection.resized();
-    // sidechainSectionBorder.setBounds(sidechainSectionBounds);
-    // sidechainSectionBounds.reduce(sidechainSectionBounds.getWidth() * 0.1,
-    //                               sidechainSectionBounds.getHeight() * 0.1);
-    //
-    // auto externalSidechainButtonBounds = sidechainSectionBounds;
-    // externalSidechainButtonBounds.removeFromBottom(sidechainSectionBounds.getHeight() * 0.80f);
-    // externalSidechainButtonBounds.removeFromRight(externalSidechainButtonBounds.getWidth() * 0.25f
-    //                                               + 5);
-    // // externalSidechainButton.setBounds(externalSidechainButtonBounds);
-    //
-    // auto sidechainListenButtonBounds = sidechainSectionBounds;
-    // sidechainListenButtonBounds.removeFromBottom(sidechainSectionBounds.getHeight() * 0.80f);
-    // sidechainListenButtonBounds.removeFromLeft(externalSidechainButtonBounds.getWidth() * 0.75f
-    //                                            + 5);
-    // sidechainListenButton.setBounds(externalSidechainButtonBounds);
-    //
-    // auto compressorSectionBounds = topSectionBounds;
-    // compressorSectionBounds.removeFromLeft(topSectionBounds.getWidth() * 0.25f + 7);
-    // compressorSectionBounds.removeFromRight(topSectionBounds.getWidth() * 0.25f + 7);
-    // compressorSectionBorder.setBounds(compressorSectionBounds);
+
+    auto compressorSectionBounds = topSectionBounds;
+    compressorSectionBounds.removeFromLeft(topSectionBounds.getWidth() * 0.25f + 7);
+    compressorSectionBounds.removeFromRight(topSectionBounds.getWidth() * 0.25f + 7);
+    compressorSection.setBounds(compressorSectionBounds);
+    compressorSection.resized();
     //
     // auto meterSectionBounds = topSectionBounds;
     // meterSectionBounds.removeFromLeft(topSectionBounds.getWidth() * 0.75f + 7);

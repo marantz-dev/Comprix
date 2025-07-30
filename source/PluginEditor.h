@@ -4,6 +4,7 @@
 #include "juce_gui_basics/juce_gui_basics.h"
 #include <JuceHeader.h>
 #include "UI/Sections/Sidechain.h"
+#include "UI/Sections/Compression.h"
 
 typedef AudioProcessorValueTreeState::SliderAttachment SliderAttachment;
 
@@ -32,6 +33,7 @@ class comprixAudioProcessorEditor : public juce::AudioProcessorEditor {
     ToggleButton externalSidechainButton;
     ToggleButton sidechainListenButton;
     SidechainSection sidechainSection;
+    CompressorSection compressorSection;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(comprixAudioProcessorEditor)
 };

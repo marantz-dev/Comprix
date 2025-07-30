@@ -9,7 +9,7 @@ class SidechainSection : public juce::Component {
         // Group box
         addAndMakeVisible(sidechainSectionBorder);
         sidechainSectionBorder.setText("Sidechain");
-        sidechainSectionBorder.setTextLabelPosition(juce::Justification::centred);
+        sidechainSectionBorder.setTextLabelPosition(juce::Justification::centredTop);
 
         // Toggle buttons
         addAndMakeVisible(externalSidechainButton);
@@ -81,7 +81,7 @@ class SidechainSection : public juce::Component {
     }
 
     void resized() override {
-        auto bounds = getLocalBounds().reduced(10);
+        auto bounds = getLocalBounds();
         sidechainSectionBorder.setBounds(bounds);
 
         bounds.reduce(30, 30); // inner padding
