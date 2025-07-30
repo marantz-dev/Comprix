@@ -1,10 +1,9 @@
 #pragma once
 
 #include "PluginProcessor.h"
+#include "juce_gui_basics/juce_gui_basics.h"
 #include <JuceHeader.h>
-#include <memory>
-#include "UI/Dial.h"
-#include "juce_audio_processors/juce_audio_processors.h"
+#include "UI/Sections/Sidechain.h"
 
 typedef AudioProcessorValueTreeState::SliderAttachment SliderAttachment;
 
@@ -22,15 +21,17 @@ class comprixAudioProcessorEditor : public juce::AudioProcessorEditor {
 
     comprixAudioProcessor &audioProcessor;
     AudioProcessorValueTreeState &valueTreeState;
-    // Custom look and feel
-    DBXDial prettyLookAndFeel;
 
-    // Your dials (add as many as you need)
-    Slider gainDial;
+    GroupComponent sidechainSectionBorder;
+    GroupComponent compressorSectionBorder;
+    GroupComponent meterSectionBorder;
+    GroupComponent scopeSectionBorder;
+    GroupComponent scopeControlsBorder;
 
-    // Labels for the dials
-    Label gainLabel;
+    Slider sidechainGainSlider;
+    ToggleButton externalSidechainButton;
+    ToggleButton sidechainListenButton;
+    SidechainSection sidechainSection;
 
-    std::unique_ptr<AudioProcessorValueTreeState::SliderAttachment> gainAttachment;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(comprixAudioProcessorEditor)
 };
