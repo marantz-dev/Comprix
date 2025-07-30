@@ -59,7 +59,6 @@ void comprixAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer,
     if(filterEnabled) {
         filter.processBlock(auxBuffer, numSamples);
     }
-    filter.processBlock(auxBuffer, numSamples);
 
     if(sidechainListen) {
         for(int ch = 0; ch < numChannels; ++ch) {
@@ -77,7 +76,7 @@ bool comprixAudioProcessor::hasEditor() const {
 }
 
 juce::AudioProcessorEditor *comprixAudioProcessor::createEditor() {
-    return new comprixAudioProcessorEditor(*this);
+    return new comprixAudioProcessorEditor(*this, parameters);
 }
 
 void comprixAudioProcessor::getStateInformation(juce::MemoryBlock &destData) {

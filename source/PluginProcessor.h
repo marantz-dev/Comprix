@@ -1,8 +1,9 @@
 #pragma once
 #include <JuceHeader.h>
-#include "DynamicProcessors.h"
-#include "Filters.h"
-#include "DryWet.h"
+#include "DSP/DynamicProcessors.h"
+#include "DSP/Filters.h"
+#include "DSP/DryWet.h"
+#include "juce_audio_utils/juce_audio_utils.h"
 
 class comprixAudioProcessor : public juce::AudioProcessor,
                               public AudioProcessorValueTreeState::Listener {

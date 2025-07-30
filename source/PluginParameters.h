@@ -3,20 +3,20 @@
 #include <JuceHeader.h>
 
 namespace Parameters {
-    static const String nameSidechainSwitch = "SCB";
-    static const String nameSidechainListen = "SCL";
-    static const String nameAttack = "ATK";
-    static const String nameRelease = "REL";
-    static const String nameThreshold = "THR";
-    static const String nameRatio = "RAT";
+    static const String nameSidechainSwitch = "SCB"; //
+    static const String nameSidechainListen = "SCL"; //
+    static const String nameAttack = "ATK";          //
+    static const String nameRelease = "REL";         //
+    static const String nameThreshold = "THR";       //
+    static const String nameRatio = "RAT";           //
     static const String nameMakeup = "MU";
     static const String nameDetector = "DET";
     static const String nameKnee = "KNE";
-    static const String nameFilterCutoff = "FC";
-    static const String nameFilterQuality = "FQ";
-    static const String nameFilterType = "FT";
-    static const String nameFilterSwitch = "FB";
-    static const String nameDryWet = "DWR";
+    static const String nameFilterCutoff = "FC";  //
+    static const String nameFilterQuality = "FQ"; //
+    static const String nameFilterType = "FT";    //
+    static const String nameFilterSwitch = "FB";  //
+    static const String nameDryWet = "DWR";       //
 
     static const float defaultAmount = 1.0f;
     static const float defaultMakeup = 0.0f;
