@@ -27,7 +27,7 @@ class ScopeSection : public juce::Component {
 
         setupVisualiser(audioProcessor.inputVisualiser, juce::Colours::transparentBlack, Colours::grey.darker());
         setupVisualiser(audioProcessor.outputVisualiser, juce::Colours::transparentBlack,
-                        juce::Colours::red.brighter(0.6f));
+                        juce::Colours::transparentWhite.withAlpha(0.8f));
         setupVisualiser(audioProcessor.gainReductionVisualiser, juce::Colours::transparentBlack,
                         Colours::yellow.brighter(0.1f));
 

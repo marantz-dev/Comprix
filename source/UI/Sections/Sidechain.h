@@ -10,7 +10,7 @@ using ComboBoxAttachment = juce::AudioProcessorValueTreeState::ComboBoxAttachmen
 
 class SidechainSection : public juce::Component {
   public:
-    SidechainSection(AudioProcessorValueTreeState &vts) {
+    SidechainSection(AudioProcessorValueTreeState &vts, AudioProcessor &processor) {
         sidechainSectionBorder.setText("Sidechain");
         sidechainSectionBorder.setTextLabelPosition(Justification::centredTop);
         addAndMakeVisible(sidechainSectionBorder);
@@ -25,9 +25,10 @@ class SidechainSection : public juce::Component {
         externalSidechainButton.setClickingTogglesState(true);
         addAndMakeVisible(externalSidechainButton);
 
-        sidechainListenButton.setButtonText("Input Listen");
+        sidechainListenButton.setButtonText("SOLO");
         sidechainListenButton.setClickingTogglesState(true);
         addAndMakeVisible(sidechainListenButton);
+        sidechainListenButton.setEnabled(false);
 
         filterEnabledButton.setButtonText("Filter");
         filterEnabledButton.setClickingTogglesState(true);
@@ -92,6 +93,13 @@ class SidechainSection : public juce::Component {
         filterEnabledAttachment.reset(new ButtonAttachment(vts, Parameters::nameFilterSwitch, filterEnabledButton));
 
         filterTypeAttachment.reset(new ComboBoxAttachment(vts, Parameters::nameFilterType, filterTypeComboBox));
+
+        externalSidechainButton.onClick = [this]() {
+            sidechainListenButton.setEnabled(externalSidechainButton.getToggleState());
+            if(!externalSidechainButton.getToggleState() && sidechainListenButton.getToggleState()) {
+                sidechainListenButton.setToggleState(false, juce::dontSendNotification);
+            }
+        };
     }
 
     ~SidechainSection() override {

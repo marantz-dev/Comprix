@@ -23,12 +23,12 @@ void comprixAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock
     auxBuffer.setSize(1, samplesPerBlock);
     auxBuffer.clear();
     filter.prepareToPlay(sampleRate);
-    drywetter.prepareToPlay(samplesPerBlock);
+    drywetter.prepareToPlay(samplesPerBlock, sampleRate);
 }
 
 void comprixAudioProcessor::releaseResources() {
     compressor.releaseResources();
-    auxBuffer.setSize(0, 0); // Clear the aux buffer
+    auxBuffer.setSize(0, 0);
     drywetter.releaseResources();
     outputVisualiser.clear();
     inputVisualiser.clear();
@@ -37,58 +37,49 @@ void comprixAudioProcessor::releaseResources() {
 
 void comprixAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::MidiBuffer &midiMessages) {
     juce::ScopedNoDenormals noDenormals;
+
     auto mainBuffer = getBusBuffer(buffer, true, 0);
     auto sidechainBuffer = getBusBuffer(buffer, true, 1);
-    auto numSamples = buffer.getNumSamples();
-    auto numChannels = mainBuffer.getNumChannels();
-
-    AudioBuffer<float> &mainSource = mainBuffer;
-    AudioBuffer<float> &externalSource = sidechainBuffer;
-
-    auxBuffer.clear();
-    if(useExternalSidechain) {
-        int sourceChannels = externalSource.getNumChannels();
-        for(int ch = 0; ch < sourceChannels; ++ch) {
-            auxBuffer.addFrom(0, 0, externalSource, ch, 0, numSamples, 1.0f / sourceChannels);
-        }
-    } else {
-        int sourceChannels = mainSource.getNumChannels();
-        for(int ch = 0; ch < sourceChannels; ++ch) {
-            auxBuffer.addFrom(0, 0, mainSource, ch, 0, numSamples, 1.0f / sourceChannels);
-        }
-    }
-    auxBuffer.applyGain(Decibels::decibelsToGain(sideChainGain));
-
-    // WHY DOESN'T THIS WORK? :(
-    // AudioBuffer<float> &source = useExternalSidechain ? sidechainBuffer : mainBuffer;
-    //
-    // int sourceChannels = source.getNumChannels();
-    // for(int ch = 0; ch < sourceChannels; ++ch) {
-    //     auxBuffer.addFrom(0, 0, source, ch, 0, numSamples, 1.0f / sourceChannels);
-    // }
-
-    if(filterEnabled) {
-        filter.processBlock(auxBuffer, numSamples);
-    }
+    const int numSamples = buffer.getNumSamples();
+    const int numChannels = mainBuffer.getNumChannels();
 
     if(sidechainListen) {
-        for(int ch = 0; ch < numChannels; ++ch) {
-            mainBuffer.copyFrom(ch, 0, auxBuffer, 0, 0, numSamples);
-            inputVisualiser.clear();
-            gainReductionVisualiser.clear();
-            outputVisualiser.pushBuffer(mainBuffer);
-        }
-    } else {
-        inputVisualiser.pushBuffer(auxBuffer);
-        inputProbe.set(jmax(mainBuffer.getMagnitude(0, numSamples), inputProbe.get()));
-        drywetter.copyDrySignal(mainBuffer);
-        compressor.processBlock(mainBuffer, auxBuffer);
-        drywetter.mixDrySignal(mainBuffer);
-        gainReductionVisualiser.pushBuffer(auxBuffer);
+        const int scChannels = sidechainBuffer.getNumChannels();
+        const int copyChannels = jmin(scChannels, numChannels);
+        for(int ch = 0; ch < copyChannels; ++ch)
+            mainBuffer.copyFrom(ch, 0, sidechainBuffer, ch, 0, numSamples);
+
+        if(filterEnabled)
+            filter.processBlock(mainBuffer, numSamples);
+        inputVisualiser.clear();
+        gainReductionVisualiser.clear();
         outputVisualiser.pushBuffer(mainBuffer);
-        gainReductionProbe.set(jmax(auxBuffer.getMagnitude(0, numSamples), gainReductionProbe.get()));
-        outputProbe.set(jmax(mainBuffer.getMagnitude(0, numSamples), outputProbe.get()));
+
+        return;
     }
+
+    auxBuffer.clear();
+    const auto &source = useExternalSidechain ? sidechainBuffer : mainBuffer;
+    const int sourceChannels = source.getNumChannels();
+    for(int ch = 0; ch < sourceChannels; ++ch)
+        auxBuffer.addFrom(0, 0, source, ch, 0, numSamples, 1.0f / sourceChannels);
+
+    auxBuffer.applyGain(Decibels::decibelsToGain(sideChainGain));
+    inputProbe.set(jmax(auxBuffer.getMagnitude(0, numSamples), inputProbe.get()));
+
+    if(filterEnabled)
+        filter.processBlock(auxBuffer, numSamples);
+
+    inputVisualiser.pushBuffer(auxBuffer);
+
+    drywetter.copyDrySignal(mainBuffer);
+    compressor.processBlock(mainBuffer, auxBuffer);
+    drywetter.mixDrySignal(mainBuffer);
+
+    gainReductionVisualiser.pushBuffer(auxBuffer);
+    outputVisualiser.pushBuffer(mainBuffer);
+    gainReductionProbe.set(jmax(auxBuffer.getMagnitude(0, numSamples), gainReductionProbe.get()));
+    outputProbe.set(jmax(mainBuffer.getMagnitude(0, numSamples), outputProbe.get()));
 }
 
 bool comprixAudioProcessor::hasEditor() const {

@@ -1,10 +1,9 @@
 #include "PluginProcessor.h"
-#include "Sidechain.h"
 #include "PluginEditor.h"
 
 comprixAudioProcessorEditor::comprixAudioProcessorEditor(comprixAudioProcessor &p, AudioProcessorValueTreeState &vts)
-    : AudioProcessorEditor(&p), audioProcessor(p), valueTreeState(vts), sidechainSection(vts), compressorSection(vts),
-      scopeSection(vts, p), meteringSection(vts, p) {
+    : AudioProcessorEditor(&p), audioProcessor(p), valueTreeState(vts), sidechainSection(vts, p),
+      compressorSection(vts), scopeSection(vts, p), meteringSection(vts, p) {
     addAndMakeVisible(sidechainSection);
     sidechainSection.setLookAndFeel(&theme);
 

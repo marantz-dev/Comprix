@@ -77,6 +77,7 @@ class Theme : public juce::LookAndFeel_V4 {
         auto isToggleOn = button.getToggleState();
         auto isButtonDown = shouldDrawButtonAsDown;
         auto isHovered = shouldDrawButtonAsHighlighted;
+        auto isEnabled = button.isEnabled();
 
         auto backgroundColor = juce::Colour(0xff3a3a3a);
         auto onColor = juce::Colour(0xffff9500);
@@ -97,6 +98,11 @@ class Theme : public juce::LookAndFeel_V4 {
                 buttonColor = offColor;
             }
         }
+        if(!isEnabled) {
+            buttonColor = juce::Colour(0xff3a3a3a).withAlpha(0.5f);
+            textOffColor = textOffColor.withAlpha(0.5f);
+            textOnColor = textOnColor.withAlpha(0.5f);
+        }
 
         auto cornerRadius = 2.0f;
 
@@ -110,61 +116,6 @@ class Theme : public juce::LookAndFeel_V4 {
             g.setColour(isToggleOn ? textOnColor : textOffColor);
             g.setFont(juce::FontOptions(bounds.getHeight() * 0.5f, juce::Font::plain));
             g.drawFittedText(button.getButtonText(), bounds.toNearestInt(), juce::Justification::centred, 1);
-        }
-    }
-
-    void drawButtonBackground(juce::Graphics &g, juce::Button &button, const juce::Colour &backgroundColour,
-                              bool shouldDrawButtonAsHighlighted, bool shouldDrawButtonAsDown) override {
-        auto bounds = button.getLocalBounds().toFloat().reduced(1.0f);
-        auto isButtonDown = shouldDrawButtonAsDown;
-        auto isHovered = shouldDrawButtonAsHighlighted;
-
-        auto buttonColor = juce::Colour(0xff464646);
-        auto hoverColor = juce::Colour(0xff525252);
-        auto pressedColor = juce::Colour(0xff3a3a3a);
-
-        juce::Colour currentColor;
-        if(isButtonDown) {
-            currentColor = pressedColor;
-        } else if(isHovered) {
-            currentColor = hoverColor;
-        } else {
-            currentColor = buttonColor;
-        }
-
-        auto cornerRadius = 2.0f;
-
-        g.setColour(currentColor);
-        g.fillRoundedRectangle(bounds, cornerRadius);
-
-        g.setColour(juce::Colour(0xff2a2a2a).withAlpha(0.3f));
-        g.drawRoundedRectangle(bounds, cornerRadius, 0.5f);
-    }
-
-    void drawButtonText(juce::Graphics &g, juce::TextButton &button, bool shouldDrawButtonAsHighlighted,
-                        bool shouldDrawButtonAsDown) override {
-        auto font = getTextButtonFont(button, button.getHeight());
-        g.setFont(font);
-
-        auto textColor = juce::Colour(0xffcccccc);
-
-        if(shouldDrawButtonAsDown) {
-            textColor = textColor.darker(0.2f);
-        } else if(shouldDrawButtonAsHighlighted) {
-            textColor = textColor.brighter(0.1f);
-        }
-
-        auto yIndent = juce::jmin(4, button.proportionOfHeight(0.3f));
-        auto cornerSize = juce::jmin(button.getHeight(), button.getWidth()) / 2;
-        auto fontHeight = juce::roundToInt(font.getHeight() * 0.6f);
-        auto leftIndent = juce::jmin(fontHeight, 2 + cornerSize / (button.isConnectedOnLeft() ? 4 : 2));
-        auto rightIndent = juce::jmin(fontHeight, 2 + cornerSize / (button.isConnectedOnRight() ? 4 : 2));
-        auto textWidth = button.getWidth() - leftIndent - rightIndent;
-
-        if(textWidth > 0) {
-            g.setColour(textColor);
-            g.drawFittedText(button.getButtonText(), leftIndent, yIndent, textWidth, button.getHeight() - yIndent * 2,
-                             juce::Justification::centred, 2);
         }
     }
 

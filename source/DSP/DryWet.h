@@ -1,5 +1,6 @@
 
 #pragma once
+#include "juce_audio_basics/juce_audio_basics.h"
 #include <JuceHeader.h>
 
 #define DEFAULT_DRY_WET 1.0f
@@ -10,11 +11,13 @@ class DryWet {
 
     ~DryWet() {}
 
-    void prepareToPlay(int maxNumSamples) {
+    void prepareToPlay(int maxNumSamples, double sampleRate) {
         drySignal.setSize(2, maxNumSamples);
         drySignal.clear();
+        dryWetRatio.reset(sampleRate, 0.05f);
+        dryWetRatio.setCurrentAndTargetValue(DEFAULT_DRY_WET);
 
-        updateState();
+        // updateState();
     }
 
     void releaseResources() { drySignal.setSize(0, 0); }
@@ -31,30 +34,42 @@ class DryWet {
         const auto numCh = destinationBuffer.getNumChannels();
         const auto numSamples = destinationBuffer.getNumSamples();
 
-        destinationBuffer.applyGain(wetGain);
+        // destinationBuffer.applyGain(wetGain);
 
-        for(int ch = 0; ch < numCh; ++ch) {
-            drySignal.applyGain(ch, 0, numSamples, dryGain);
-            destinationBuffer.addFrom(ch, 0, drySignal, ch, 0, numSamples);
+        // for(int ch = 0; ch < numCh; ++ch) {
+        //     drySignal.applyGain(ch, 0, numSamples, dryGain);
+        //     destinationBuffer.addFrom(ch, 0, drySignal, ch, 0, numSamples);
+        // }
+        auto dryData = drySignal.getArrayOfWritePointers();
+        auto destData = destinationBuffer.getArrayOfWritePointers();
+        for(int s = 0; s < numSamples; ++s) {
+            dryGain = sqrt(1.0f - dryWetRatio.getNextValue());
+            wetGain = sqrt(dryWetRatio.getNextValue());
+            for(int ch = 0; ch < numCh; ++ch) {
+                dryData[ch][s] *= dryGain;
+                destData[ch][s] = destData[ch][s] * wetGain + dryData[ch][s];
+            }
         }
     }
 
     void setDWRatio(float newValue) {
-        dryWetRatio = newValue / 100;
-        updateState();
+        // dryWetRatio = newValue / 100;
+        dryWetRatio.setTargetValue(newValue / 100.0f);
     }
 
   private:
-    void updateState() {
-        dryGain = sqrt(1 - dryWetRatio);
-        wetGain = sqrt(dryWetRatio);
-    }
+    // void updateState() {
+    //     dryGain = sqrt(1 - dryWetRatio);
+    //     wetGain = sqrt(dryWetRatio);
+    // }
 
-    float dryWetRatio = DEFAULT_DRY_WET;
+    // float dryWetRatio = DEFAULT_DRY_WET;
     float dryGain = 0.0f;
     float wetGain = 0.0f;
 
     AudioBuffer<float> drySignal;
+
+    SmoothedValue<float, ValueSmoothingTypes::Linear> dryWetRatio;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(DryWet)
 };

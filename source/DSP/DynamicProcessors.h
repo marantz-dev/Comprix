@@ -47,13 +47,9 @@ class AnalogCompressor {
 
     void setRatio(float newRatio) { ratio = newRatio; }
 
-    void setAttackTime(float newAttackTime) {
-        alphaCoeffAttack.setCurrentAndTargetValue(computeAlphaCoeff(newAttackTime));
-    }
+    void setAttackTime(float newAttackTime) { alphaCoeffAttack.setTargetValue(computeAlphaCoeff(newAttackTime)); }
 
-    void setReleaseTime(float newReleaseTime) {
-        alphaCoeffRelease.setCurrentAndTargetValue(computeAlphaCoeff(newReleaseTime));
-    }
+    void setReleaseTime(float newReleaseTime) { alphaCoeffRelease.setTargetValue(computeAlphaCoeff(newReleaseTime)); }
 
     void setMakeupGain(float newMakeupGain) { makeupGain.setTargetValue(Decibels::decibelsToGain(newMakeupGain)); }
 
