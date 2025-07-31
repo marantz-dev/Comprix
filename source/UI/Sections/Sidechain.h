@@ -4,6 +4,10 @@
 #include "PluginParameters.h"
 #include "UIutils.h"
 
+using SliderAttachment = juce::AudioProcessorValueTreeState::SliderAttachment;
+using ButtonAttachment = juce::AudioProcessorValueTreeState::ButtonAttachment;
+using ComboBoxAttachment = juce::AudioProcessorValueTreeState::ComboBoxAttachment;
+
 class SidechainSection : public juce::Component {
   public:
     SidechainSection(AudioProcessorValueTreeState &vts) {
@@ -165,10 +169,6 @@ class SidechainSection : public juce::Component {
     Label sidechainGainLabel;
     Label filterCutoffLabel;
     Label filterQualityLabel;
-
-    using SliderAttachment = juce::AudioProcessorValueTreeState::SliderAttachment;
-    using ButtonAttachment = juce::AudioProcessorValueTreeState::ButtonAttachment;
-    using ComboBoxAttachment = juce::AudioProcessorValueTreeState::ComboBoxAttachment;
 
     std::unique_ptr<SliderAttachment> sidechainGainAttachment;
     std::unique_ptr<SliderAttachment> filterCutoffAttachment;

@@ -1,9 +1,11 @@
 
 #pragma once
-
 #include <JuceHeader.h>
 #include "PluginParameters.h"
 #include "UIutils.h"
+
+using SliderAttachment = juce::AudioProcessorValueTreeState::SliderAttachment;
+using ButtonAttachment = juce::AudioProcessorValueTreeState::ButtonAttachment;
 
 class CompressorSection : public juce::Component {
   public:
@@ -101,7 +103,6 @@ class CompressorSection : public juce::Component {
     }
 
     ~CompressorSection() override {
-        this->setLookAndFeel(nullptr);
         attackAttachment.reset();
         releaseAttachment.reset();
         thresholdAttachment.reset();
@@ -192,9 +193,6 @@ class CompressorSection : public juce::Component {
 
     ToggleButton peakDetectorButton;
     ToggleButton rmsDetectorButton;
-
-    using SliderAttachment = juce::AudioProcessorValueTreeState::SliderAttachment;
-    using ButtonAttachment = juce::AudioProcessorValueTreeState::ButtonAttachment;
 
     std::unique_ptr<SliderAttachment> attackAttachment;
     std::unique_ptr<SliderAttachment> releaseAttachment;

@@ -6,11 +6,11 @@
 
 class DryWet {
   public:
-    DryWet(float defaultDryWetRatio = DEFAULT_DRY_WET) { dryWetRatio = defaultDryWetRatio; }
+    DryWet(float defaultDryWetRatio = DEFAULT_DRY_WET) : dryWetRatio(defaultDryWetRatio) {}
 
     ~DryWet() {}
 
-    void prepareToPlay(double sampleRate, int maxNumSamples) {
+    void prepareToPlay(int maxNumSamples) {
         drySignal.setSize(2, maxNumSamples);
         drySignal.clear();
 
@@ -51,7 +51,6 @@ class DryWet {
     }
 
     float dryWetRatio = DEFAULT_DRY_WET;
-
     float dryGain = 0.0f;
     float wetGain = 0.0f;
 

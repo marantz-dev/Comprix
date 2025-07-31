@@ -2,42 +2,42 @@
 
 #include <JuceHeader.h>
 
+using APVS = AudioProcessorValueTreeState;
 namespace Parameters {
-    static const String nameSidechainSwitch = "SCB"; //
-    static const String nameSidechainListen = "SCL"; //
-    static const String nameAttack = "ATK";          //
-    static const String nameRelease = "REL";         //
-    static const String nameThreshold = "THR";       //
-    static const String nameRatio = "RAT";           //
+    static const String nameSidechainSwitch = "SCB";
+    static const String nameSidechainListen = "SCL";
+    static const String nameAttack = "ATK";
+    static const String nameRelease = "REL";
+    static const String nameThreshold = "THR";
+    static const String nameRatio = "RAT";
     static const String nameMakeup = "MU";
     static const String nameDetector = "DET";
     static const String nameKnee = "KNE";
-    static const String nameFilterCutoff = "FC";  //
-    static const String nameFilterQuality = "FQ"; //
-    static const String nameFilterType = "FT";    //
-    static const String nameFilterSwitch = "FB";  //
-    static const String nameDryWet = "DWR";       //
-    static const String nameScopeZoom = "SCT";    //
+    static const String nameFilterCutoff = "FC";
+    static const String nameFilterQuality = "FQ";
+    static const String nameFilterType = "FT";
+    static const String nameFilterSwitch = "FB";
+    static const String nameDryWet = "DWR";
+    static const String nameScopeZoom = "SCT";
     static const String nameSidechainGain = "SCG";
 
-    static const float defaultAmount = 1.0f;
     static const float defaultMakeup = 0.0f;
     static const float defaultThreshold = 0.0f;
     static const float defaultRmsTime = 0.01f;
     static const float defaultAttack = 1.0f;
     static const float defaultRelease = 30.0f;
     static const float defaultRatio = 4.0f;
-    static const float defaultDetector = 0.0f;        // 0 for RMS, 1 for Peak
-    static const float defaultKnee = 6.0f;            // in dB
-    static const float defaultFilterCutoff = 1000.0f; // in Hz
-    static const float defaultFilterQuality = 1.0f;   // Q
-    static const float defaultFilterType = 0.0f;      // 0 for LowPass, 1 for HighPass, 2 for Band
-    static const float defaultDryWet = 100.0f;        // in percent
-    static const float defaultScopeZoom = 50.0f;      // in %
-    static const float defaultSidechainGain = 0.0f;   // in dB
+    static const float defaultDetector = 0.0f;
+    static const float defaultKnee = 6.0f;
+    static const float defaultFilterCutoff = 1000.0f;
+    static const float defaultFilterQuality = 1.0f;
+    static const float defaultFilterType = 0.0f;
+    static const float defaultDryWet = 100.0f;
+    static const float defaultScopeZoom = 50.0f;
+    static const float defaultSidechainGain = 0.0f;
 
-    static const float maxRmsTime = 1.0f;
     static const float minRmsTime = 0.01f;
+    static const float maxRmsTime = 1.0f;
     static const float minAttack = 0.01f;
     static const float maxAttack = 1000.0f;
     static const float minRelease = 1.0f;
@@ -50,16 +50,15 @@ namespace Parameters {
     static const float maxRatio = 20.0f;
     static const float minKnee = 0.01f;
     static const float maxKnee = 36.0f;
-    static const float minFilterCutoff = 20.0f;    // in Hz
-    static const float maxFilterCutoff = 20000.0f; // in Hz
-    static const float minFilterQuality = 0.1f;    // Q factor
-    static const float maxFilterQuality = 10.0f;   // Q factor
-    static const float minDryWet = 0.0f;           // in percent
-    static const float maxDryWet = 100.0f;         // in percent
-    static const float minSidechainGain = -48.0f;  // in dB
-    static const float maxSidechainGain = 24.0f;   // in dB
+    static const float minFilterCutoff = 20.0f;
+    static const float maxFilterCutoff = 20000.0f;
+    static const float minFilterQuality = 0.1f;
+    static const float maxFilterQuality = 10.0f;
+    static const float minDryWet = 0.0f;
+    static const float maxDryWet = 100.0f;
+    static const float minSidechainGain = -48.0f;
+    static const float maxSidechainGain = 24.0f;
 
-    // Step size constants for individual parameters
     static const float stepSizeAttack = 0.01f;
     static const float stepSizeRelease = 0.01f;
     static const float stepSizeThreshold = 0.1f;
@@ -69,10 +68,9 @@ namespace Parameters {
     static const float stepSizeFilterCutoff = 1.0f;
     static const float stepSizeFilterQuality = 0.01f;
     static const float stepSizeDryWet = 0.1f;
-    static const float stepSizeScopeZoom = 0.1f;     // in percent
-    static const float stepSizeSidechainGain = 0.1f; // in dB
+    static const float stepSizeScopeZoom = 0.1f;
+    static const float stepSizeSidechainGain = 0.1f;
 
-    // Skew factor constants for individual parameters
     static const float skewFactorAttack = 0.2f;
     static const float skewFactorRelease = 0.2f;
     static const float skewFactorThreshold = 1.6f;
@@ -82,10 +80,10 @@ namespace Parameters {
     static const float skewFactorFilterCutoff = 0.5f;
     static const float skewFactorFilterQuality = 0.5f;
     static const float skewFactorDryWet = 1.0f;
-    static const float skewFactorScopeZoom = 1.0f;     // in percent
-    static const float skewFactorSidechainGain = 1.0f; // in dB
+    static const float skewFactorScopeZoom = 1.0f;
+    static const float skewFactorSidechainGain = 1.0f;
 
-    static AudioProcessorValueTreeState::ParameterLayout createParameterLayout() {
+    inline APVS::ParameterLayout createParameterLayout() {
         std::vector<std::unique_ptr<RangedAudioParameter>> params;
 
         int id = 1;
@@ -155,8 +153,7 @@ namespace Parameters {
         return {params.begin(), params.end()};
     }
 
-    static void
-    addListeners(AudioProcessorValueTreeState &valueTreeState, AudioProcessorValueTreeState::Listener *listener) {
+    inline void addListeners(APVS &valueTreeState, AudioProcessorValueTreeState::Listener *listener) {
         std::unique_ptr<XmlElement> xml(valueTreeState.copyState().createXml());
 
         for(auto *element : xml->getChildWithTagNameIterator("PARAM")) {
@@ -164,4 +161,4 @@ namespace Parameters {
             valueTreeState.addParameterListener(id, listener);
         }
     }
-} // namespace Parameters
+}

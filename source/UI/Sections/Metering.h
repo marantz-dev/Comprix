@@ -26,8 +26,8 @@ class MeteringSection : public juce::Component {
         addAndMakeVisible(outputMeter);
         outputMeter.connectTo(p.outputProbe);
 
-        addAndMakeVisible(sidechainMeter);
-        sidechainMeter.connectTo(p.sidechainProbe);
+        addAndMakeVisible(gainReductionMeter);
+        gainReductionMeter.connectTo(p.gainReductionProbe);
 
         inputLabel.setText("IN", juce::dontSendNotification);
         inputLabel.setJustificationType(juce::Justification::centred);
@@ -38,10 +38,6 @@ class MeteringSection : public juce::Component {
         gainReductionLabel.setText("GR", juce::dontSendNotification);
         gainReductionLabel.setJustificationType(juce::Justification::centred);
     }
-
-    ~MeteringSection() override {}
-
-    void paint(juce::Graphics &g) override {}
 
     void resized() override {
         auto bounds = getLocalBounds();
@@ -59,13 +55,13 @@ class MeteringSection : public juce::Component {
         auto sidechainArea = bounds;
         sidechainArea.removeFromLeft(meterWidth + meterSpacing);
         sidechainArea.removeFromRight(meterWidth + meterSpacing);
-        sidechainMeter.setBounds(sidechainArea.withSizeKeepingCentre(meterWidth, meterHeight));
+        gainReductionMeter.setBounds(sidechainArea.withSizeKeepingCentre(meterWidth, meterHeight));
 
         auto outputArea = bounds;
         outputArea.removeFromLeft(2 * meterWidth + 2 * meterSpacing);
         outputMeter.setBounds(outputArea.withSizeKeepingCentre(meterWidth, meterHeight));
 
-        gainReductionLabel.attachToComponent(&sidechainMeter, false);
+        gainReductionLabel.attachToComponent(&gainReductionMeter, false);
         outputLabel.attachToComponent(&outputMeter, false);
         inputLabel.attachToComponent(&inputMeter, false);
     }
@@ -73,11 +69,12 @@ class MeteringSection : public juce::Component {
   private:
     comprixAudioProcessor &audioProcessor;
     AudioProcessorValueTreeState &valueTreeState;
+
     GroupComponent meteringSectionBorder;
 
     VolumeMeter inputMeter;
     VolumeMeter outputMeter;
-    GainReductionMeter sidechainMeter;
+    GainReductionMeter gainReductionMeter;
 
     Label inputLabel;
     Label outputLabel;

@@ -1,9 +1,7 @@
-#include "PluginParameters.h"
 #include "PluginProcessor.h"
 #include "Sidechain.h"
 #include "PluginEditor.h"
-#pragma clang diagnostic ignored "-Wfloat-conversion"
-#pragma clang diagnostic ignored "-Wimplicit-int-float-conversion"
+
 comprixAudioProcessorEditor::comprixAudioProcessorEditor(comprixAudioProcessor &p, AudioProcessorValueTreeState &vts)
     : AudioProcessorEditor(&p), audioProcessor(p), valueTreeState(vts), sidechainSection(vts), compressorSection(vts),
       scopeSection(vts, p), meteringSection(vts, p) {
@@ -19,6 +17,8 @@ comprixAudioProcessorEditor::comprixAudioProcessorEditor(comprixAudioProcessor &
     addAndMakeVisible(meteringSection);
 
     setSize(1000, 600);
+
+    // TO BE CONTINUED...
     // setResizable(true, true);
     //
     // // Set min and max resize limits
@@ -45,14 +45,14 @@ void comprixAudioProcessorEditor::paint(juce::Graphics &g) {
     g.setColour(juce::Colours::white);
 
     auto headerBounds = bounds.removeFromTop(height * 0.06f);
-    g.setFont(30.0f);
     headerBounds.removeFromLeft(40);
+    g.setFont(30.0f);
     g.drawFittedText("Comprix", headerBounds, juce::Justification::left, 1);
 }
 
 void comprixAudioProcessorEditor::resized() {
     auto bounds = getLocalBounds();
-    bounds.removeFromTop(bounds.getHeight() * 0.03f); // Reserve space for header
+    bounds.removeFromTop(bounds.getHeight() * 0.03f);
     bounds.reduce(20, 20);
 
     auto topSectionBounds = bounds;

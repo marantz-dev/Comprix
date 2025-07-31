@@ -2,7 +2,7 @@
 #pragma once
 #include <JuceHeader.h>
 #include "Detectors.h"
-#include "juce_core/system/juce_PlatformDefs.h"
+
 enum detectorType { RMS, Peak };
 class AnalogCompressor {
   public:
@@ -24,8 +24,6 @@ class AnalogCompressor {
         alphaCoeffRelease.setCurrentAndTargetValue(computeAlphaCoeff(100.0f));
         kneeWidth.setCurrentAndTargetValue(6.0f);
         makeupGain.setCurrentAndTargetValue(1.0f);
-
-        predGain = 1.0f;
     }
 
     void releaseResources() { rmsDetector.releaseResources(); }
@@ -42,7 +40,7 @@ class AnalogCompressor {
         computeGain(sidechainBuffer, numSamples);
         convertDecibelsToLinear(sidechainBuffer, numSamples);
         smoothGainEnvelope(sidechainBuffer, numSamples);
-        applyGain(mainBuffer, sidechainBuffer);
+        applyGainReduction(mainBuffer, sidechainBuffer);
     }
 
     void setThreshold(float newThreshold) { threshold = newThreshold; }
@@ -57,9 +55,7 @@ class AnalogCompressor {
         alphaCoeffRelease.setCurrentAndTargetValue(computeAlphaCoeff(newReleaseTime));
     }
 
-    void setMakeupGain(float newMakeupGain) {
-        makeupGain.setTargetValue(Decibels::decibelsToGain(newMakeupGain));
-    }
+    void setMakeupGain(float newMakeupGain) { makeupGain.setTargetValue(Decibels::decibelsToGain(newMakeupGain)); }
 
     void setDetectorType(detectorType newDetector) { currentDetector = newDetector; }
 
@@ -109,23 +105,7 @@ class AnalogCompressor {
         }
     }
 
-    void convertDetectorToDecibels(AudioBuffer<float> &buffer, int numSamples) {
-        auto sidechainData = buffer.getWritePointer(0);
-
-        for(int smp = 0; smp < numSamples; ++smp) {
-            sidechainData[smp] = Decibels::gainToDecibels(sidechainData[smp]);
-        }
-    }
-
-    void convertDecibelsToLinear(AudioBuffer<float> &buffer, int numSamples) {
-        auto sidechainData = buffer.getWritePointer(0);
-
-        for(int smp = 0; smp < numSamples; ++smp) {
-            sidechainData[smp] = Decibels::decibelsToGain(sidechainData[smp]);
-        }
-    }
-
-    void applyGain(AudioBuffer<float> &mainBuffer, AudioBuffer<float> &sidechainBuffer) {
+    void applyGainReduction(AudioBuffer<float> &mainBuffer, AudioBuffer<float> &sidechainBuffer) {
         auto mainData = mainBuffer.getArrayOfWritePointers();
         auto scData = sidechainBuffer.getReadPointer(0);
 
@@ -144,6 +124,22 @@ class AnalogCompressor {
         }
     }
 
+    void convertDetectorToDecibels(AudioBuffer<float> &buffer, int numSamples) {
+        auto sidechainData = buffer.getWritePointer(0);
+
+        for(int smp = 0; smp < numSamples; ++smp) {
+            sidechainData[smp] = Decibels::gainToDecibels(sidechainData[smp]);
+        }
+    }
+
+    void convertDecibelsToLinear(AudioBuffer<float> &buffer, int numSamples) {
+        auto sidechainData = buffer.getWritePointer(0);
+
+        for(int smp = 0; smp < numSamples; ++smp) {
+            sidechainData[smp] = Decibels::decibelsToGain(sidechainData[smp]);
+        }
+    }
+
     float computeAlphaCoeff(float timeMs) {
         float tau = timeMs / 1000.0f;
         return exp(-1.0f / (tau * static_cast<float>(sampleRate)));
@@ -151,14 +147,15 @@ class AnalogCompressor {
 
     RRMS rmsDetector;
     SimplePeakDetector peakDetector;
+    detectorType currentDetector = RMS;
+
     float threshold = 0.0f;
     float ratio = 2.0f;
-    SmoothedValue<float, ValueSmoothingTypes::Linear> alphaCoeffAttack, alphaCoeffRelease,
-     kneeWidth, makeupGain;
-
-    double sampleRate = 44100.0;
     float predGain = 1.0f;
 
-    detectorType currentDetector = RMS;
+    double sampleRate = 44100.0;
+
+    SmoothedValue<float, ValueSmoothingTypes::Linear> alphaCoeffAttack, alphaCoeffRelease, kneeWidth, makeupGain;
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AnalogCompressor)
 };

@@ -6,17 +6,13 @@
 
 class comprixAudioProcessor : public juce::AudioProcessor, public AudioProcessorValueTreeState::Listener {
   public:
-    //==============================================================================
     comprixAudioProcessor();
     ~comprixAudioProcessor() override;
 
-    //==============================================================================
     void prepareToPlay(double sampleRate, int samplesPerBlock) override;
     void releaseResources() override;
-
     void processBlock(juce::AudioBuffer<float> &, juce::MidiBuffer &) override;
 
-    //==============================================================================
     juce::AudioProcessorEditor *createEditor() override;
     bool hasEditor() const override;
 
@@ -49,11 +45,11 @@ class comprixAudioProcessor : public juce::AudioProcessor, public AudioProcessor
 
     AudioVisualiserComponent outputVisualiser;
     AudioVisualiserComponent inputVisualiser;
-    AudioVisualiserComponent sidechainVisualiser;
+    AudioVisualiserComponent gainReductionVisualiser;
 
     Atomic<float> inputProbe;
     Atomic<float> outputProbe;
-    Atomic<float> sidechainProbe;
+    Atomic<float> gainReductionProbe;
 
   private:
     void parameterChanged(const String &paramID, float newValue) override;
@@ -70,6 +66,5 @@ class comprixAudioProcessor : public juce::AudioProcessor, public AudioProcessor
     StereoFilter filter;
     DryWet drywetter;
 
-    //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(comprixAudioProcessor)
 };

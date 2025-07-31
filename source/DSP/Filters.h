@@ -6,10 +6,9 @@ enum FilterType { LowPass, HighPass, BandPass };
 
 class StereoFilter {
   public:
-    StereoFilter(double defaultFrequency = 440.0,
-                 double defaultQuality
-                 = 1 / MathConstants<double>::sqrt2 /* int deafultType, ecc.... */)
-        : frequency(defaultFrequency), quality(defaultQuality) {
+    StereoFilter(const double defaultFrequency = 440.0, const double defaultQuality = 1 / MathConstants<double>::sqrt2,
+                 const FilterType defaultFilterType = LowPass)
+        : frequency(defaultFrequency), quality(defaultQuality), filterType(defaultFilterType) {
         for(int i = 0; i < MAX_NUM_CHANNELS; ++i) {
             iirFilters.add(new dsp::IIR::Filter<float>());
         }
@@ -25,8 +24,7 @@ class StereoFilter {
     void releaseResources() {}
 
     void processBlock(AudioBuffer<float> &buffer, const int numSamples) {
-        dsp::AudioBlock<float> block(buffer.getArrayOfWritePointers(), buffer.getNumChannels(),
-                                     buffer.getNumSamples());
+        dsp::AudioBlock<float> block(buffer.getArrayOfWritePointers(), buffer.getNumChannels(), buffer.getNumSamples());
 
         for(int ch = 0; ch < buffer.getNumChannels(); ++ch) {
             dsp::AudioBlock<float> chBlock = block.getSingleChannelBlock(ch);
@@ -44,6 +42,7 @@ class StereoFilter {
         quality = newValue;
         updateCoefficients();
     }
+
     void setFilterType(FilterType newType) {
         filterType = newType;
         updateCoefficients();
@@ -57,27 +56,19 @@ class StereoFilter {
 
   private:
     void updateCoefficients() {
-        // Declare coefficients outside switch
         dsp::IIR::Coefficients<float>::Ptr iirCoefficients;
 
         switch(filterType) {
         case LowPass:
-            iirCoefficients
-             = dsp::IIR::Coefficients<float>::makeLowPass(sampleRate, frequency, quality);
+            iirCoefficients = dsp::IIR::Coefficients<float>::makeLowPass(sampleRate, frequency, quality);
             break;
         case HighPass:
-            iirCoefficients
-             = dsp::IIR::Coefficients<float>::makeHighPass(sampleRate, frequency, quality);
+            iirCoefficients = dsp::IIR::Coefficients<float>::makeHighPass(sampleRate, frequency, quality);
             break;
         case BandPass:
-            iirCoefficients
-             = dsp::IIR::Coefficients<float>::makeBandPass(sampleRate, frequency, quality);
+            iirCoefficients = dsp::IIR::Coefficients<float>::makeBandPass(sampleRate, frequency, quality);
             break;
-        default:
-            // Fallback to low pass
-            iirCoefficients
-             = dsp::IIR::Coefficients<float>::makeLowPass(sampleRate, frequency, quality);
-            break;
+        default: iirCoefficients = dsp::IIR::Coefficients<float>::makeLowPass(sampleRate, frequency, quality); break;
         }
 
         for(int i = 0; i < MAX_NUM_CHANNELS; ++i) {
@@ -88,9 +79,8 @@ class StereoFilter {
     double frequency;
     double quality;
     double sampleRate = 48000;
-    FilterType filterType = LowPass;
 
-    // dsp::IIR::Filter<float> iirFilter;
+    FilterType filterType;
 
     OwnedArray<dsp::IIR::Filter<float>> iirFilters;
 

@@ -9,7 +9,8 @@
 
 class RRMS {
   public:
-    RRMS() {}
+    RRMS(const float defaultRMSTime = 0.01f, const float defaultMaxRMSTime = 1.0f)
+        : rmsTime(defaultRMSTime), maxTime(defaultMaxRMSTime) {}
 
     ~RRMS() {}
 
@@ -25,16 +26,13 @@ class RRMS {
         auto bufferData = buffer.getWritePointer(0);
         auto historyData = history.getWritePointer(0);
 
-        // Square the input
         FloatVectorOperations::multiply(bufferData, bufferData, numSamples);
-        // Remove this line: FloatVectorOperations::multiply(bufferData, 1.0f / windowSize,
-        // numSamples);
 
         for(int smp = 0; smp < numSamples; ++smp) {
             avg += bufferData[smp] - historyData[historyIndex];
             historyData[historyIndex] = bufferData[smp];
-            bufferData[smp] = sqrt(avg / windowSize);       // Divide here instead
-            historyIndex = (historyIndex + 1) % windowSize; // Also fix this line
+            bufferData[smp] = sqrt(avg / windowSize);
+            historyIndex = (historyIndex + 1) % windowSize;
         }
     }
 
@@ -51,14 +49,16 @@ class RRMS {
         avg = 0.0f;
     }
 
-    float avg = 0;
     AudioBuffer<float> history;
+
     int historyIndex = 0;
-    float maxTime = 1.0f;
+    int windowSize;
+
+    float avg = 0;
+    float rmsTime;
+    float maxTime;
 
     double sampleRate;
-    float rmsTime = 0.01f;
-    int windowSize;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(RRMS)
 };
@@ -71,12 +71,14 @@ class RRMS {
 
 class SimplePeakDetector {
   public:
-    SimplePeakDetector() {}
+    SimplePeakDetector(const float defaultAttackCoeff = 0.01f, const float defaultReleaseCoeff = 0.99f)
+        : attackCoeff(defaultAttackCoeff), releaseCoeff(defaultReleaseCoeff) {}
+    ~SimplePeakDetector() {}
 
     void prepareToPlay(double sr) {
         sampleRate = sr;
-        setAttackTime(0.1f);    // 0.1ms attack
-        setReleaseTime(100.0f); // 100ms release
+        setAttackTime(0.1f);
+        setReleaseTime(100.0f);
         reset();
     }
 
@@ -120,8 +122,8 @@ class SimplePeakDetector {
   private:
     double sampleRate = 44100.0;
     float peakValue = 0.0f;
-    float attackCoeff = 0.0f;   // Very fast attack
-    float releaseCoeff = 0.99f; // Slow release
+    float attackCoeff;
+    float releaseCoeff;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SimplePeakDetector)
 };

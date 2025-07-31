@@ -8,7 +8,7 @@ comprixAudioProcessor::comprixAudioProcessor()
                       .withInput("Input", AudioChannelSet::stereo(), true)
                       .withInput("Sidechain", AudioChannelSet::stereo(), true)
                       .withOutput("Output", AudioChannelSet::stereo(), true)),
-      outputVisualiser(1), inputVisualiser(1), sidechainVisualiser(1),
+      outputVisualiser(1), inputVisualiser(1), gainReductionVisualiser(1),
       parameters(*this, nullptr, "ComprixParams", Parameters::createParameterLayout()), compressor()
 
 {
@@ -23,7 +23,7 @@ void comprixAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock
     auxBuffer.setSize(1, samplesPerBlock);
     auxBuffer.clear();
     filter.prepareToPlay(sampleRate);
-    drywetter.prepareToPlay(sampleRate, samplesPerBlock);
+    drywetter.prepareToPlay(samplesPerBlock);
 }
 
 void comprixAudioProcessor::releaseResources() {
@@ -32,7 +32,7 @@ void comprixAudioProcessor::releaseResources() {
     drywetter.releaseResources();
     outputVisualiser.clear();
     inputVisualiser.clear();
-    sidechainVisualiser.clear();
+    gainReductionVisualiser.clear();
 }
 
 void comprixAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::MidiBuffer &midiMessages) {
@@ -75,7 +75,7 @@ void comprixAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce:
         for(int ch = 0; ch < numChannels; ++ch) {
             mainBuffer.copyFrom(ch, 0, auxBuffer, 0, 0, numSamples);
             inputVisualiser.clear();
-            sidechainVisualiser.clear();
+            gainReductionVisualiser.clear();
             outputVisualiser.pushBuffer(mainBuffer);
         }
     } else {
@@ -84,9 +84,9 @@ void comprixAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce:
         drywetter.copyDrySignal(mainBuffer);
         compressor.processBlock(mainBuffer, auxBuffer);
         drywetter.mixDrySignal(mainBuffer);
-        sidechainVisualiser.pushBuffer(auxBuffer);
+        gainReductionVisualiser.pushBuffer(auxBuffer);
         outputVisualiser.pushBuffer(mainBuffer);
-        sidechainProbe.set(jmax(auxBuffer.getMagnitude(0, numSamples), sidechainProbe.get()));
+        gainReductionProbe.set(jmax(auxBuffer.getMagnitude(0, numSamples), gainReductionProbe.get()));
         outputProbe.set(jmax(mainBuffer.getMagnitude(0, numSamples), outputProbe.get()));
     }
 }
@@ -174,7 +174,7 @@ void comprixAudioProcessor::parameterChanged(const String &paramID, float newVal
          = static_cast<int>(128 + (2048 - 128) * ((100 - newValue) / 100.0f)); // Convert percentage to a factor;
         outputVisualiser.setBufferSize(newZoom);
         inputVisualiser.setBufferSize(newZoom);
-        sidechainVisualiser.setBufferSize(newZoom);
+        gainReductionVisualiser.setBufferSize(newZoom);
     } else if(paramID == Parameters::nameSidechainGain) {
         sideChainGain = newValue;
     }
