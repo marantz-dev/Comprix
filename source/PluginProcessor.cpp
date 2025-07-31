@@ -51,14 +51,15 @@ void comprixAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce:
         for(int ch = 0; ch < sourceChannels; ++ch) {
             auxBuffer.addFrom(0, 0, externalSource, ch, 0, numSamples, 1.0f / sourceChannels);
         }
-        auxBuffer.applyGain(Decibels::decibelsToGain(sideChainGain));
-
     } else {
         int sourceChannels = mainSource.getNumChannels();
         for(int ch = 0; ch < sourceChannels; ++ch) {
             auxBuffer.addFrom(0, 0, mainSource, ch, 0, numSamples, 1.0f / sourceChannels);
         }
     }
+    auxBuffer.applyGain(Decibels::decibelsToGain(sideChainGain));
+
+    // WHY DOESN'T THIS WORK? :(
     // AudioBuffer<float> &source = useExternalSidechain ? sidechainBuffer : mainBuffer;
     //
     // int sourceChannels = source.getNumChannels();
@@ -69,7 +70,6 @@ void comprixAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce:
     if(filterEnabled) {
         filter.processBlock(auxBuffer, numSamples);
     }
-    // Apply sidechain gain
 
     if(sidechainListen) {
         for(int ch = 0; ch < numChannels; ++ch) {
