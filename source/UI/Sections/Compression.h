@@ -2,140 +2,180 @@
 #pragma once
 
 #include <JuceHeader.h>
-#include "../../PluginParameters.h"
-#include "juce_gui_basics/juce_gui_basics.h"
+#include "PluginParameters.h"
+#include "UIutils.h"
 
 class CompressorSection : public juce::Component {
   public:
-    CompressorSection(AudioProcessorValueTreeState &vts) {
+    CompressorSection(AudioProcessorValueTreeState &apvts) : vts(apvts) {
         // Group box
         addAndMakeVisible(compressorSectionBorder);
         compressorSectionBorder.setText("Compressor");
         compressorSectionBorder.setTextLabelPosition(juce::Justification::centred);
 
+        // ###################
+        // #                 #
+        // #  SETUP SLIDERS  #
+        // #                 #
+        // ###################
+
+        UIutils::setupSlider(attackSlider, juce::Slider::RotaryHorizontalVerticalDrag, Parameters::minAttack,
+                             Parameters::maxAttack, Parameters::defaultAttack, Parameters::stepSizeAttack, " ms",
+                             Parameters::skewFactorAttack, attackLabel, "Attack");
         addAndMakeVisible(attackSlider);
-        attackSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-        attackSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
-        attackSlider.setTextValueSuffix(" ms");
-        attackSlider.setRange(Parameters::minAttack, Parameters::maxAttack, 0.01);
-        attackSlider.setValue(Parameters::defaultAttack);
-        attackSlider.setDoubleClickReturnValue(true, Parameters::defaultAttack);
+        addAndMakeVisible(attackLabel);
 
+        UIutils::setupSlider(releaseSlider, juce::Slider::RotaryHorizontalVerticalDrag, Parameters::minRelease,
+                             Parameters::maxRelease, Parameters::defaultRelease, Parameters::stepSizeRelease, " ms",
+                             Parameters::skewFactorRelease, releaseLabel, "Release");
         addAndMakeVisible(releaseSlider);
-        releaseSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-        releaseSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
-        releaseSlider.setTextValueSuffix(" ms");
-        releaseSlider.setRange(Parameters::minRelease, Parameters::maxRelease, 0.01);
-        releaseSlider.setValue(Parameters::defaultRelease);
-        releaseSlider.setDoubleClickReturnValue(true, Parameters::defaultRelease);
+        addAndMakeVisible(releaseLabel);
 
+        UIutils::setupSlider(thresholdSlider, juce::Slider::RotaryHorizontalVerticalDrag, Parameters::minThreshold,
+                             Parameters::maxThreshold, Parameters::defaultThreshold, Parameters::stepSizeThreshold,
+                             " dB", Parameters::skewFactorThreshold, thresholdLabel, "Threshold");
         addAndMakeVisible(thresholdSlider);
-        thresholdSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-        thresholdSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
-        thresholdSlider.setTextValueSuffix(" dB");
-        thresholdSlider.setRange(Parameters::minThreshold, Parameters::maxThreshold, 0.1);
-        thresholdSlider.setValue(Parameters::defaultThreshold);
-        thresholdSlider.setDoubleClickReturnValue(true, Parameters::defaultThreshold);
+        addAndMakeVisible(thresholdLabel);
 
+        UIutils::setupSlider(ratioSlider, juce::Slider::RotaryHorizontalVerticalDrag, Parameters::minRatio,
+                             Parameters::maxRatio, Parameters::defaultRatio, Parameters::stepSizeRatio, ":1",
+                             Parameters::skewFactorRatio, ratioLabel, "Ratio");
         addAndMakeVisible(ratioSlider);
-        ratioSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag); // Ratio slider
-        ratioSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
-        ratioSlider.setTextValueSuffix(":1");
-        ratioSlider.setRange(Parameters::minRatio, Parameters::maxRatio, 0.1);
-        ratioSlider.setValue(Parameters::defaultRatio);
-        ratioSlider.setDoubleClickReturnValue(true, Parameters::defaultRatio);
+        addAndMakeVisible(ratioLabel);
 
+        UIutils::setupSlider(makeupSlider, juce::Slider::RotaryHorizontalVerticalDrag, Parameters::minMakeup,
+                             Parameters::maxMakeup, Parameters::defaultMakeup, Parameters::stepSizeMakeup, " dB",
+                             Parameters::skewFactorMakeup, makeupLabel, "Makeup");
         addAndMakeVisible(makeupSlider);
-        makeupSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-        makeupSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
-        makeupSlider.setTextValueSuffix(" dB");
-        makeupSlider.setRange(Parameters::minMakeup, Parameters::maxMakeup, 0.1);
-        makeupSlider.setValue(Parameters::defaultMakeup);
-        makeupSlider.setDoubleClickReturnValue(true, Parameters::defaultMakeup);
+        addAndMakeVisible(makeupLabel);
 
+        UIutils::setupSlider(dryWetSlider, juce::Slider::RotaryHorizontalVerticalDrag, 0.0f, Parameters::maxDryWet,
+                             Parameters::defaultDryWet, Parameters::stepSizeDryWet, " %", Parameters::skewFactorDryWet,
+                             dryWetLabel, "Dry/Wet");
+        addAndMakeVisible(dryWetSlider);
+        addAndMakeVisible(dryWetLabel);
+
+        UIutils::setupSlider(kneeSlider, juce::Slider::LinearHorizontal, Parameters::minKnee, Parameters::maxKnee,
+                             Parameters::defaultKnee, Parameters::stepSizeKnee, " dB", Parameters::skewFactorKnee,
+                             kneeLabel, "Knee Width");
+        kneeSlider.setColour(juce::Slider::thumbColourId, juce::Colours::white);
+        kneeSlider.setColour(juce::Slider::trackColourId, juce::Colours::white);
         addAndMakeVisible(kneeSlider);
-        kneeSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-        kneeSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
-        kneeSlider.setTextValueSuffix(" dB");
-        kneeSlider.setRange(Parameters::minKnee, Parameters::maxKnee, 0.01);
-        kneeSlider.setValue(Parameters::defaultKnee);
-        kneeSlider.setDoubleClickReturnValue(true, Parameters::defaultKnee);
+        addAndMakeVisible(kneeLabel);
 
-        addAndMakeVisible(rmsTimeSlider);
-        rmsTimeSlider.setSliderStyle(juce::Slider::LinearBar);
-        rmsTimeSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
-        rmsTimeSlider.setTextValueSuffix(" s");
-        rmsTimeSlider.setRange(Parameters::minRmsTime, Parameters::maxRmsTime, 0.01);
-        rmsTimeSlider.setValue(Parameters::defaultRmsTime);
-        // rmsTimeSlider.setDoubleClickReturnValue(true, Parameters::defaultRmsTime);
+        // ##################
+        // #                #
+        // #  SETUP BUTTON  #
+        // #                #
+        // ##################
 
-        addAndMakeVisible(peakTimeSlider);
-        peakTimeSlider.setSliderStyle(juce::Slider::LinearBar);
-        peakTimeSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
-        peakTimeSlider.setTextValueSuffix(" s");
-        // peakTimeSlider.setRange(Parameters::minPeakTime, Parameters::maxPeakTime, 0.01);
-        // peakTimeSlider.setValue(Parameters::defaultPeakTime);
-        // peakTimeSlider.setDoubleClickReturnValue(true, Parameters::defaultPeakTime);
-
-        addAndMakeVisible(peakDetectorButton);
-        peakDetectorButton.setButtonText("Peak");
-        peakDetectorButton.setClickingTogglesState(true);
+        // peakDetectorButton.setButtonText("Peak");
+        // peakDetectorButton.setClickingTogglesState(true);
+        // peakDetectorButton.setToggleState(true, juce::dontSendNotification);
+        // peakDetectorButton.setTooltip("Use Peak detection for compression");
+        // peakDetectorButton.setClickingTogglesState(true);
+        UIutils::setupToggleButton(peakDetectorButton, "Peak");
         peakDetectorButton.setToggleState(true, juce::dontSendNotification);
-        peakDetectorButton.setTooltip("Use Peak detection for compression");
-        peakDetectorButton.setClickingTogglesState(true);
+        addAndMakeVisible(peakDetectorButton);
 
+        UIutils::setupToggleButton(rmsDetectorButton, "RMS");
         addAndMakeVisible(rmsDetectorButton);
-        rmsDetectorButton.setButtonText("RMS");
-        rmsDetectorButton.setClickingTogglesState(true);
-        rmsDetectorButton.setToggleState(false, juce::dontSendNotification);
-        rmsDetectorButton.setTooltip("Use RMS detection for compression");
-        rmsDetectorButton.setClickingTogglesState(true);
+
+        // ########################
+        // #                      #
+        // #  SETUP ATTACHEMENTS  #
+        // #                      #
+        // ########################
+
+        attackAttachment.reset(new SliderAttachment(vts, Parameters::nameAttack, attackSlider));
+        releaseAttachment.reset(new SliderAttachment(vts, Parameters::nameRelease, releaseSlider));
+        thresholdAttachment.reset(new SliderAttachment(vts, Parameters::nameThreshold, thresholdSlider));
+        ratioAttachment.reset(new SliderAttachment(vts, Parameters::nameRatio, ratioSlider));
+        makeupAttachment.reset(new SliderAttachment(vts, Parameters::nameMakeup, makeupSlider));
+        kneeAttachment.reset(new SliderAttachment(vts, Parameters::nameKnee, kneeSlider));
+        dryWetAttachment.reset(new SliderAttachment(vts, Parameters::nameDryWet, dryWetSlider));
+
+        rmsDetectorButton.onClick = [this]() {
+            vts.getParameter(Parameters::nameDetector)->setValueNotifyingHost(0.0f);
+            updateDetectorButtons();
+        };
+        peakDetectorButton.onClick = [this]() {
+            vts.getParameter(Parameters::nameDetector)->setValueNotifyingHost(1.0f);
+            updateDetectorButtons();
+        };
     }
 
-    ~CompressorSection() override {}
+    ~CompressorSection() override {
+        attackAttachment.reset();
+        releaseAttachment.reset();
+        thresholdAttachment.reset();
+        ratioAttachment.reset();
+        makeupAttachment.reset();
+        kneeAttachment.reset();
+        dryWetAttachment.reset();
+        peakDetectorAttachment.reset();
+        rmsDetectorAttachment.reset();
+    }
 
     void paint(juce::Graphics &g) override {
         g.setColour(juce::Colours::white);
         g.drawLine(10.0f, getHeight() / 2.0f, getWidth() - 10.0f, getHeight() / 2.0f, 1.0f);
     }
     void resized() override {
-        auto area = getLocalBounds();
-        compressorSectionBorder.setBounds(area);
+        auto bounds = getLocalBounds();
+        compressorSectionBorder.setBounds(bounds);
 
-        area.reduce(10, 10); // Padding inside the group box
+        bounds.reduce(30, 30);
 
-        // === Split vertically in two halves ===
-        auto topRow = area.removeFromTop(area.getHeight() / 2);
-        auto bottomRow = area;
+        auto topRow = bounds.removeFromTop(bounds.getHeight() / 2);
+        auto bottomRow = bounds;
 
-        // === TOP ROW: A R T R ===
         auto knobWidth = topRow.getWidth() / 4;
         attackSlider.setBounds(topRow.removeFromLeft(knobWidth).reduced(5));
         releaseSlider.setBounds(topRow.removeFromLeft(knobWidth).reduced(5));
         thresholdSlider.setBounds(topRow.removeFromLeft(knobWidth).reduced(5));
         ratioSlider.setBounds(topRow.reduced(5));
 
-        // === BOTTOM ROW ===
         auto leftBottom = bottomRow.removeFromLeft(bottomRow.getWidth() / 2);
         auto rightBottom = bottomRow;
 
-        // --- LEFT SIDE: Peak & RMS buttons (big) + small sliders ---
+        auto buttonWidth = leftBottom.getWidth() / 2;
         auto buttonHeight = 40;
-        peakDetectorButton.setBounds(leftBottom.removeFromTop(buttonHeight).reduced(5));
-        rmsDetectorButton.setBounds(leftBottom.removeFromTop(buttonHeight).reduced(5));
+        int buttonSpacing = 10;
 
-        auto timeSliderHeight = (leftBottom.getHeight() - 5) / 2;
-        peakTimeSlider.setBounds(leftBottom.removeFromTop(timeSliderHeight).reduced(5));
-        rmsTimeSlider.setBounds(leftBottom.reduced(5));
+        leftBottom.removeFromTop(buttonSpacing);
 
-        // --- RIGHT SIDE: KNEE and MAKEUP sliders ---
+        auto buttonBounds = leftBottom;
+        rmsDetectorButton.setBounds(buttonBounds.removeFromLeft(buttonWidth).withHeight(buttonHeight).reduced(5));
+        peakDetectorButton.setBounds(buttonBounds.withHeight(buttonHeight).reduced(5));
+
+        leftBottom.removeFromTop(buttonHeight + buttonSpacing);
+        kneeSlider.setBounds(leftBottom.reduced(5));
+
         auto kneeWidth = rightBottom.getWidth() / 2;
-        kneeSlider.setBounds(rightBottom.removeFromLeft(kneeWidth).reduced(5));
-        makeupSlider.setBounds(rightBottom.reduced(5));
+        rightBottom.removeFromTop(buttonSpacing);
+        makeupSlider.setBounds(rightBottom.removeFromLeft(kneeWidth).reduced(5));
+        dryWetSlider.setBounds(rightBottom.reduced(5));
+
+        UIutils::attachLabel(attackLabel, &attackSlider);
+        UIutils::attachLabel(releaseLabel, &releaseSlider);
+        UIutils::attachLabel(thresholdLabel, &thresholdSlider);
+        UIutils::attachLabel(ratioLabel, &ratioSlider);
+        UIutils::attachLabel(makeupLabel, &makeupSlider, 12);
+        UIutils::attachLabel(dryWetLabel, &dryWetSlider, 12);
+        UIutils::attachLabel(kneeLabel, &kneeSlider);
     }
 
   private:
+    void updateDetectorButtons() {
+        auto *param = dynamic_cast<AudioParameterChoice *>(vts.getParameter(Parameters::nameDetector));
+        int value = param->getIndex();
+        rmsDetectorButton.setToggleState(value == 0, juce::dontSendNotification);
+        peakDetectorButton.setToggleState(value == 1, juce::dontSendNotification);
+    }
+
     juce::GroupComponent compressorSectionBorder;
+    AudioProcessorValueTreeState &vts;
 
     Slider attackSlider;
     Slider releaseSlider;
@@ -143,12 +183,31 @@ class CompressorSection : public juce::Component {
     Slider ratioSlider;
     Slider makeupSlider;
     Slider kneeSlider;
+    Slider dryWetSlider;
 
-    Slider rmsTimeSlider;
-    Slider peakTimeSlider;
+    Label attackLabel;
+    Label releaseLabel;
+    Label thresholdLabel;
+    Label ratioLabel;
+    Label makeupLabel;
+    Label kneeLabel;
+    Label dryWetLabel;
 
     ToggleButton peakDetectorButton;
     ToggleButton rmsDetectorButton;
+
+    using SliderAttachment = juce::AudioProcessorValueTreeState::SliderAttachment;
+    using ButtonAttachment = juce::AudioProcessorValueTreeState::ButtonAttachment;
+
+    std::unique_ptr<SliderAttachment> attackAttachment;
+    std::unique_ptr<SliderAttachment> releaseAttachment;
+    std::unique_ptr<SliderAttachment> thresholdAttachment;
+    std::unique_ptr<SliderAttachment> ratioAttachment;
+    std::unique_ptr<SliderAttachment> makeupAttachment;
+    std::unique_ptr<SliderAttachment> kneeAttachment;
+    std::unique_ptr<SliderAttachment> dryWetAttachment;
+    std::unique_ptr<ButtonAttachment> peakDetectorAttachment;
+    std::unique_ptr<ButtonAttachment> rmsDetectorAttachment;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(CompressorSection)
 };

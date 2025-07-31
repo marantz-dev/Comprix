@@ -8,6 +8,7 @@ comprixAudioProcessor::comprixAudioProcessor()
                       .withInput("Input", AudioChannelSet::stereo(), true)
                       .withInput("Sidechain", AudioChannelSet::stereo(), true)
                       .withOutput("Output", AudioChannelSet::stereo(), true)),
+      outputVisualiser(1), inputVisualiser(1), sidechainVisualiser(1),
       parameters(*this, nullptr, "ComprixParams", Parameters::createParameterLayout()), compressor()
 
 {
@@ -29,10 +30,12 @@ void comprixAudioProcessor::releaseResources() {
     compressor.releaseResources();
     auxBuffer.setSize(0, 0); // Clear the aux buffer
     drywetter.releaseResources();
+    outputVisualiser.clear();
+    inputVisualiser.clear();
+    sidechainVisualiser.clear();
 }
 
-void comprixAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer,
-                                         juce::MidiBuffer &midiMessages) {
+void comprixAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::MidiBuffer &midiMessages) {
     juce::ScopedNoDenormals noDenormals;
     auto mainBuffer = getBusBuffer(buffer, true, 0);
     auto sidechainBuffer = getBusBuffer(buffer, true, 1);
@@ -48,6 +51,7 @@ void comprixAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer,
         for(int ch = 0; ch < sourceChannels; ++ch) {
             auxBuffer.addFrom(0, 0, externalSource, ch, 0, numSamples, 1.0f / sourceChannels);
         }
+        auxBuffer.applyGain(Decibels::decibelsToGain(sideChainGain));
 
     } else {
         int sourceChannels = mainSource.getNumChannels();
@@ -55,19 +59,35 @@ void comprixAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer,
             auxBuffer.addFrom(0, 0, mainSource, ch, 0, numSamples, 1.0f / sourceChannels);
         }
     }
+    // AudioBuffer<float> &source = useExternalSidechain ? sidechainBuffer : mainBuffer;
+    //
+    // int sourceChannels = source.getNumChannels();
+    // for(int ch = 0; ch < sourceChannels; ++ch) {
+    //     auxBuffer.addFrom(0, 0, source, ch, 0, numSamples, 1.0f / sourceChannels);
+    // }
 
     if(filterEnabled) {
         filter.processBlock(auxBuffer, numSamples);
     }
+    // Apply sidechain gain
 
     if(sidechainListen) {
         for(int ch = 0; ch < numChannels; ++ch) {
             mainBuffer.copyFrom(ch, 0, auxBuffer, 0, 0, numSamples);
+            inputVisualiser.clear();
+            sidechainVisualiser.clear();
+            outputVisualiser.pushBuffer(mainBuffer);
         }
     } else {
+        inputVisualiser.pushBuffer(auxBuffer);
+        inputProbe.set(jmax(mainBuffer.getMagnitude(0, numSamples), inputProbe.get()));
         drywetter.copyDrySignal(mainBuffer);
         compressor.processBlock(mainBuffer, auxBuffer);
         drywetter.mixDrySignal(mainBuffer);
+        sidechainVisualiser.pushBuffer(auxBuffer);
+        outputVisualiser.pushBuffer(mainBuffer);
+        sidechainProbe.set(jmax(auxBuffer.getMagnitude(0, numSamples), sidechainProbe.get()));
+        outputProbe.set(jmax(mainBuffer.getMagnitude(0, numSamples), outputProbe.get()));
     }
 }
 
@@ -124,14 +144,9 @@ void comprixAudioProcessor::parameterChanged(const String &paramID, float newVal
         sidechainListen = newValue > 0.5f;
     } else if(paramID == Parameters::nameDetector) {
         int detectorIndex = static_cast<int>(newValue);
-
         switch(detectorIndex) {
         case 0: compressor.setDetectorType(RMS); break;
         case 1: compressor.setDetectorType(Peak); break;
-        // Future detector types:
-        // case 2:
-        //     compressor.setDetectorType(Envelope);
-        //     break;
         default:
             compressor.setDetectorType(RMS); // Fallback to RMS
             break;
@@ -154,6 +169,14 @@ void comprixAudioProcessor::parameterChanged(const String &paramID, float newVal
         filterEnabled = newValue > 0.5f;
     } else if(paramID == Parameters::nameDryWet) {
         drywetter.setDWRatio(newValue);
+    } else if(paramID == Parameters::nameScopeZoom) {
+        int newZoom
+         = static_cast<int>(128 + (2048 - 128) * ((100 - newValue) / 100.0f)); // Convert percentage to a factor;
+        outputVisualiser.setBufferSize(newZoom);
+        inputVisualiser.setBufferSize(newZoom);
+        sidechainVisualiser.setBufferSize(newZoom);
+    } else if(paramID == Parameters::nameSidechainGain) {
+        sideChainGain = newValue;
     }
 }
 

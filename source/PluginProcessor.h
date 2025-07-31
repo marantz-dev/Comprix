@@ -1,12 +1,10 @@
 #pragma once
 #include <JuceHeader.h>
-#include "DSP/DynamicProcessors.h"
-#include "DSP/Filters.h"
-#include "DSP/DryWet.h"
-#include "juce_audio_utils/juce_audio_utils.h"
+#include "DynamicProcessors.h"
+#include "Filters.h"
+#include "DryWet.h"
 
-class comprixAudioProcessor : public juce::AudioProcessor,
-                              public AudioProcessorValueTreeState::Listener {
+class comprixAudioProcessor : public juce::AudioProcessor, public AudioProcessorValueTreeState::Listener {
   public:
     //==============================================================================
     comprixAudioProcessor();
@@ -49,17 +47,27 @@ class comprixAudioProcessor : public juce::AudioProcessor,
     void getStateInformation(juce::MemoryBlock &destData) override;
     void setStateInformation(const void *data, int sizeInBytes) override;
 
+    AudioVisualiserComponent outputVisualiser;
+    AudioVisualiserComponent inputVisualiser;
+    AudioVisualiserComponent sidechainVisualiser;
+
+    Atomic<float> inputProbe;
+    Atomic<float> outputProbe;
+    Atomic<float> sidechainProbe;
+
   private:
     void parameterChanged(const String &paramID, float newValue) override;
 
     AudioProcessorValueTreeState parameters;
 
-    AnalogCompressor compressor;
-    AudioBuffer<float> auxBuffer;
     bool useExternalSidechain = false;
     bool sidechainListen = false;
-    StereoFilter filter;
     bool filterEnabled = false;
+    float sideChainGain = 0.0f;
+
+    AnalogCompressor compressor;
+    AudioBuffer<float> auxBuffer;
+    StereoFilter filter;
     DryWet drywetter;
 
     //==============================================================================

@@ -17,11 +17,13 @@ namespace Parameters {
     static const String nameFilterType = "FT";    //
     static const String nameFilterSwitch = "FB";  //
     static const String nameDryWet = "DWR";       //
+    static const String nameScopeZoom = "SCT";    //
+    static const String nameSidechainGain = "SCG";
 
     static const float defaultAmount = 1.0f;
     static const float defaultMakeup = 0.0f;
     static const float defaultThreshold = 0.0f;
-    static const float defaultRmsTime = 0.05f;
+    static const float defaultRmsTime = 0.01f;
     static const float defaultAttack = 1.0f;
     static const float defaultRelease = 30.0f;
     static const float defaultRatio = 4.0f;
@@ -31,8 +33,10 @@ namespace Parameters {
     static const float defaultFilterQuality = 1.0f;   // Q
     static const float defaultFilterType = 0.0f;      // 0 for LowPass, 1 for HighPass, 2 for Band
     static const float defaultDryWet = 100.0f;        // in percent
+    static const float defaultScopeZoom = 50.0f;      // in %
+    static const float defaultSidechainGain = 0.0f;   // in dB
 
-    static const float maxRmsTime = 0.5f;
+    static const float maxRmsTime = 1.0f;
     static const float minRmsTime = 0.01f;
     static const float minAttack = 0.01f;
     static const float maxAttack = 1000.0f;
@@ -52,6 +56,34 @@ namespace Parameters {
     static const float maxFilterQuality = 10.0f;   // Q factor
     static const float minDryWet = 0.0f;           // in percent
     static const float maxDryWet = 100.0f;         // in percent
+    static const float minSidechainGain = -48.0f;  // in dB
+    static const float maxSidechainGain = 24.0f;   // in dB
+
+    // Step size constants for individual parameters
+    static const float stepSizeAttack = 0.01f;
+    static const float stepSizeRelease = 0.01f;
+    static const float stepSizeThreshold = 0.1f;
+    static const float stepSizeRatio = 0.01f;
+    static const float stepSizeKnee = 0.01f;
+    static const float stepSizeMakeup = 0.1f;
+    static const float stepSizeFilterCutoff = 1.0f;
+    static const float stepSizeFilterQuality = 0.01f;
+    static const float stepSizeDryWet = 0.1f;
+    static const float stepSizeScopeZoom = 0.1f;     // in percent
+    static const float stepSizeSidechainGain = 0.1f; // in dB
+
+    // Skew factor constants for individual parameters
+    static const float skewFactorAttack = 0.2f;
+    static const float skewFactorRelease = 0.2f;
+    static const float skewFactorThreshold = 1.6f;
+    static const float skewFactorRatio = 0.5f;
+    static const float skewFactorKnee = 0.5f;
+    static const float skewFactorMakeup = 1.0f;
+    static const float skewFactorFilterCutoff = 0.5f;
+    static const float skewFactorFilterQuality = 0.5f;
+    static const float skewFactorDryWet = 1.0f;
+    static const float skewFactorScopeZoom = 1.0f;     // in percent
+    static const float skewFactorSidechainGain = 1.0f; // in dB
 
     static AudioProcessorValueTreeState::ParameterLayout createParameterLayout() {
         std::vector<std::unique_ptr<RangedAudioParameter>> params;
@@ -60,60 +92,71 @@ namespace Parameters {
 
         params.push_back(std::make_unique<AudioParameterFloat>(
          ParameterID(nameAttack, id++), "Attack (ms)",
-         NormalisableRange<float>(minAttack, maxAttack, 0.01f, 0.2f), defaultAttack));
+         NormalisableRange<float>(minAttack, maxAttack, stepSizeAttack, skewFactorAttack), defaultAttack));
 
         params.push_back(std::make_unique<AudioParameterFloat>(
          ParameterID(nameRelease, id++), "Release (ms)",
-         NormalisableRange<float>(minRelease, maxRelease, 0.01f, 0.2f), defaultRelease));
+         NormalisableRange<float>(minRelease, maxRelease, stepSizeRelease, skewFactorRelease), defaultRelease));
 
         params.push_back(std::make_unique<AudioParameterFloat>(
          ParameterID(nameThreshold, id++), "Threshold (dB)",
-         NormalisableRange<float>(minThreshold, maxThreshold, 0.1f, 1.6f), defaultThreshold));
+         NormalisableRange<float>(minThreshold, maxThreshold, stepSizeThreshold, skewFactorThreshold),
+         defaultThreshold));
 
         params.push_back(std::make_unique<AudioParameterFloat>(
          ParameterID(nameRatio, id++), "Ratio",
-         NormalisableRange<float>(minRatio, maxRatio, 0.1f, 0.5f), defaultRatio));
+         NormalisableRange<float>(minRatio, maxRatio, stepSizeRatio, skewFactorRatio), defaultRatio));
 
         params.push_back(std::make_unique<AudioParameterFloat>(
          ParameterID(nameKnee, id++), "Knee Width (dB)",
-         NormalisableRange<float>(minKnee, maxKnee, 0.01f, 0.5f), defaultKnee));
+         NormalisableRange<float>(minKnee, maxKnee, stepSizeKnee, skewFactorKnee), defaultKnee));
 
         params.push_back(std::make_unique<AudioParameterFloat>(
          ParameterID(nameMakeup, id++), "Makeup (dB)",
-         NormalisableRange<float>(minMakeup, maxMakeup, 0.1f), defaultMakeup));
+         NormalisableRange<float>(minMakeup, maxMakeup, stepSizeMakeup, skewFactorMakeup), defaultMakeup));
 
         params.push_back(std::make_unique<AudioParameterFloat>(
          ParameterID(nameFilterCutoff, id++), "Filter Cutoff (Hz)",
-         NormalisableRange<float>(minFilterCutoff, maxFilterCutoff, 1.0f, 0.5f),
+         NormalisableRange<float>(minFilterCutoff, maxFilterCutoff, stepSizeFilterCutoff, skewFactorFilterCutoff),
          defaultFilterCutoff));
 
         params.push_back(std::make_unique<AudioParameterFloat>(
          ParameterID(nameFilterQuality, id++), "Filter Quality (Q)",
-         NormalisableRange<float>(minFilterQuality, maxFilterQuality, 0.01f, 0.5f),
+         NormalisableRange<float>(minFilterQuality, maxFilterQuality, stepSizeFilterQuality, skewFactorFilterQuality),
          defaultFilterQuality));
-        params.push_back(std::make_unique<AudioParameterChoice>(
-         ParameterID(nameFilterType, id++), "Filter Type",
-         StringArray{"LowPass", "HighPass", "BandPass"}, defaultFilterType));
-        params.push_back(std::make_unique<AudioParameterBool>(ParameterID(nameFilterSwitch, id++),
-                                                              "Filter ON/OFF", false));
+
+        params.push_back(std::make_unique<AudioParameterChoice>(ParameterID(nameFilterType, id++), "Filter Type",
+                                                                StringArray{"LowPass", "HighPass", "BandPass"},
+                                                                defaultFilterType));
 
         params.push_back(
-         std::make_unique<AudioParameterBool>(ParameterID("SCB", id++), "Sidechain ON/OF", false));
+         std::make_unique<AudioParameterBool>(ParameterID(nameFilterSwitch, id++), "Filter ON/OFF", false));
 
-        params.push_back(
-         std::make_unique<AudioParameterBool>(ParameterID("SCL", id++), "Sidechain Listen", false));
+        params.push_back(std::make_unique<AudioParameterBool>(ParameterID("SCB", id++), "Sidechain ON/OF", false));
 
-        params.push_back(std::make_unique<AudioParameterChoice>(
-         ParameterID(nameDetector, id++), "Detector", StringArray{"RMS", "Peak"}, defaultDetector));
+        params.push_back(std::make_unique<AudioParameterBool>(ParameterID("SCL", id++), "Sidechain Listen", false));
+
+        params.push_back(std::make_unique<AudioParameterChoice>(ParameterID(nameDetector, id++), "Detector",
+                                                                StringArray{"RMS", "Peak"}, defaultDetector));
+
         params.push_back(std::make_unique<AudioParameterFloat>(
          ParameterID(nameDryWet, id++), "Dry/Wet (%)",
-         NormalisableRange<float>(minDryWet, maxDryWet, 0.1f), defaultDryWet));
+         NormalisableRange<float>(minDryWet, maxDryWet, stepSizeDryWet, skewFactorDryWet), defaultDryWet));
+
+        params.push_back(std::make_unique<AudioParameterFloat>(
+         ParameterID(nameScopeZoom, id++), "Scope Zoom (%)",
+         NormalisableRange<float>(0.1f, 100.0f, stepSizeScopeZoom, skewFactorScopeZoom), defaultScopeZoom));
+
+        params.push_back(std::make_unique<AudioParameterFloat>(
+         ParameterID(nameSidechainGain, id++), "Sidechain Gain (dB)",
+         NormalisableRange<float>(minSidechainGain, maxSidechainGain, stepSizeSidechainGain, skewFactorSidechainGain),
+         defaultSidechainGain));
 
         return {params.begin(), params.end()};
     }
 
-    static void addListeners(AudioProcessorValueTreeState &valueTreeState,
-                             AudioProcessorValueTreeState::Listener *listener) {
+    static void
+    addListeners(AudioProcessorValueTreeState &valueTreeState, AudioProcessorValueTreeState::Listener *listener) {
         std::unique_ptr<XmlElement> xml(valueTreeState.copyState().createXml());
 
         for(auto *element : xml->getChildWithTagNameIterator("PARAM")) {

@@ -1,10 +1,12 @@
 #pragma once
 
-#include "PluginProcessor.h"
-#include "juce_gui_basics/juce_gui_basics.h"
 #include <JuceHeader.h>
-#include "UI/Sections/Sidechain.h"
-#include "UI/Sections/Compression.h"
+#include "PluginProcessor.h"
+#include "Meters.h"
+#include "Sidechain.h"
+#include "Compression.h"
+#include "Scope.h"
+#include "Theme.h"
 
 typedef AudioProcessorValueTreeState::SliderAttachment SliderAttachment;
 
@@ -18,22 +20,15 @@ class comprixAudioProcessorEditor : public juce::AudioProcessorEditor {
     void resized() override;
 
   private:
-    void setupSlider(Slider &slider, int x, int y, int w, int h);
-
     comprixAudioProcessor &audioProcessor;
     AudioProcessorValueTreeState &valueTreeState;
 
-    GroupComponent sidechainSectionBorder;
-    GroupComponent compressorSectionBorder;
-    GroupComponent meterSectionBorder;
-    GroupComponent scopeSectionBorder;
-    GroupComponent scopeControlsBorder;
-
-    Slider sidechainGainSlider;
-    ToggleButton externalSidechainButton;
-    ToggleButton sidechainListenButton;
     SidechainSection sidechainSection;
     CompressorSection compressorSection;
+    ScopeSection scopeSection;
+    MeteringSection meteringSection;
+
+    Theme theme;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(comprixAudioProcessorEditor)
 };
