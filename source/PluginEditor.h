@@ -2,7 +2,7 @@
 
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
-#include "Meters.h"
+#include "Metering.h"
 #include "Sidechain.h"
 #include "Compression.h"
 #include "Scope.h"

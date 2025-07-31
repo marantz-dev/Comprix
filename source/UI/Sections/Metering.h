@@ -2,7 +2,7 @@
 
 #pragma once
 #include "PluginProcessor.h"
-#include "Meter.h"
+#include "Meters.h"
 #include <JuceHeader.h>
 
 class MeteringSection : public juce::Component {
@@ -22,7 +22,6 @@ class MeteringSection : public juce::Component {
 
         addAndMakeVisible(sidechainMeter);
         sidechainMeter.connectTo(p.sidechainProbe);
-        sidechainMeter.setGainReductionMode(true);
 
         inputLabel.setText("IN", juce::dontSendNotification);
         inputLabel.setJustificationType(juce::Justification::centred);
@@ -70,9 +69,9 @@ class MeteringSection : public juce::Component {
     AudioProcessorValueTreeState &valueTreeState;
     juce::GroupComponent meteringSectionBorder;
 
-    Meter inputMeter;
-    Meter outputMeter;
-    Meter sidechainMeter;
+    VolumeMeter inputMeter;
+    VolumeMeter outputMeter;
+    GainReductionMeter sidechainMeter;
 
     Label inputLabel;
     Label outputLabel;

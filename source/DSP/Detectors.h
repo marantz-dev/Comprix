@@ -1,6 +1,12 @@
 #pragma once
 #include <JuceHeader.h>
 
+// #################
+// #               #
+// #  RUNNING RMS  #
+// #               #
+// #################
+
 class RRMS {
   public:
     RRMS() {}
@@ -56,6 +62,13 @@ class RRMS {
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(RRMS)
 };
+
+// ###################
+// #                 #
+// #  PEAK DETECTOR  #
+// #                 #
+// ###################
+
 class SimplePeakDetector {
   public:
     SimplePeakDetector() {}
