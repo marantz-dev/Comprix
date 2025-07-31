@@ -14,6 +14,12 @@ class MeteringSection : public juce::Component {
         meteringSectionBorder.setTextLabelPosition(juce::Justification::centredTop);
         meteringSectionBorder.setText("Meters");
 
+        // ########################################
+        // #                                      #
+        // #  SETUP METERS AND CONNECT TO PROBES  #
+        // #                                      #
+        // ########################################
+
         addAndMakeVisible(inputMeter);
         inputMeter.connectTo(p.inputProbe);
 
@@ -67,7 +73,7 @@ class MeteringSection : public juce::Component {
   private:
     comprixAudioProcessor &audioProcessor;
     AudioProcessorValueTreeState &valueTreeState;
-    juce::GroupComponent meteringSectionBorder;
+    GroupComponent meteringSectionBorder;
 
     VolumeMeter inputMeter;
     VolumeMeter outputMeter;

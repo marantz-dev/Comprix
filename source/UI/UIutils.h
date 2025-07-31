@@ -30,11 +30,5 @@ namespace UIutils {
         button.setClickingTogglesState(true);
         button.setToggleState(false, juce::dontSendNotification);
     }
-    //     addAndMakeVisible(peakDetectorButton);
-    // peakDetectorButton.setButtonText("Peak");
-    // peakDetectorButton.setClickingTogglesState(true);
-    // peakDetectorButton.setToggleState(true, juce::dontSendNotification);
-    // peakDetectorButton.setTooltip("Use Peak detection for compression");
-    // peakDetectorButton.setClickingTogglesState(true);
 
 }

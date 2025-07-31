@@ -63,17 +63,12 @@ class CompressorSection : public juce::Component {
         addAndMakeVisible(kneeSlider);
         addAndMakeVisible(kneeLabel);
 
-        // ##################
-        // #                #
-        // #  SETUP BUTTON  #
-        // #                #
-        // ##################
+        // ###################
+        // #                 #
+        // #  SETUP BUTTONS  #
+        // #                 #
+        // ###################
 
-        // peakDetectorButton.setButtonText("Peak");
-        // peakDetectorButton.setClickingTogglesState(true);
-        // peakDetectorButton.setToggleState(true, juce::dontSendNotification);
-        // peakDetectorButton.setTooltip("Use Peak detection for compression");
-        // peakDetectorButton.setClickingTogglesState(true);
         UIutils::setupToggleButton(peakDetectorButton, "Peak");
         peakDetectorButton.setToggleState(true, juce::dontSendNotification);
         addAndMakeVisible(peakDetectorButton);
@@ -106,6 +101,7 @@ class CompressorSection : public juce::Component {
     }
 
     ~CompressorSection() override {
+        this->setLookAndFeel(nullptr);
         attackAttachment.reset();
         releaseAttachment.reset();
         thresholdAttachment.reset();
@@ -121,6 +117,7 @@ class CompressorSection : public juce::Component {
         g.setColour(juce::Colours::white);
         g.drawLine(10.0f, getHeight() / 2.0f, getWidth() - 10.0f, getHeight() / 2.0f, 1.0f);
     }
+
     void resized() override {
         auto bounds = getLocalBounds();
         compressorSectionBorder.setBounds(bounds);
