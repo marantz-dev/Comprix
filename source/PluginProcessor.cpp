@@ -1,6 +1,7 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 #include "PluginParameters.h"
+#include "juce_core/juce_core.h"
 
 //==============================================================================
 comprixAudioProcessor::comprixAudioProcessor()
@@ -34,7 +35,6 @@ void comprixAudioProcessor::releaseResources() {
     inputVisualiser.clear();
     gainReductionVisualiser.clear();
 }
-
 void comprixAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::MidiBuffer &midiMessages) {
     juce::ScopedNoDenormals noDenormals;
 
@@ -48,41 +48,51 @@ void comprixAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce:
         return;
     }
 
+    const auto &source
+     = (useExternalSidechain) && (sidechainBuffer.getNumChannels() > 0) ? sidechainBuffer : mainBuffer;
+
     if(sidechainListen) {
-        const int scChannels = sidechainBuffer.getNumChannels();
-        const int copyChannels = jmin(scChannels, numChannels);
-        for(int ch = 0; ch < copyChannels; ++ch)
-            mainBuffer.copyFrom(ch, 0, sidechainBuffer, ch, 0, numSamples);
-        mainBuffer.applyGain(Decibels::decibelsToGain(externalSidechainGain));
+        if(&source != &mainBuffer) {
+            const int copyChannels = jmin(source.getNumChannels(), numChannels);
+            for(int ch = 0; ch < copyChannels; ++ch) {
+                mainBuffer.copyFrom(ch, 0, source, ch, 0, numSamples);
+            }
+        }
 
-        filter.processBlock(mainBuffer, numSamples);
-        inputVisualiser.pushBuffer(mainBuffer);
-        gainReductionVisualiser.clear();
-        gainReductionProbe.set(1.0f);
-        outputVisualiser.clear();
+        mainBuffer.applyGain(Decibels::decibelsToGain(sidechainGain));
 
+        if(!filter.isBypassed())
+            filter.processBlock(mainBuffer, numSamples);
+
+        outputVisualiser.pushBuffer(mainBuffer);
+        clearVisualizersForSidechain();
         return;
     }
 
     auxBuffer.clear();
-    const auto &source = useExternalSidechain ? sidechainBuffer : mainBuffer;
     const int sourceChannels = source.getNumChannels();
-    for(int ch = 0; ch < sourceChannels; ++ch)
-        auxBuffer.addFrom(0, 0, source, ch, 0, numSamples, 1.0f / sourceChannels);
+    const float channelGain = 1.0f / sourceChannels;
 
-    auxBuffer.applyGain(Decibels::decibelsToGain(externalSidechainGain));
-    inputProbe.set(jmax(auxBuffer.getMagnitude(0, numSamples), inputProbe.get()));
+    for(int ch = 0; ch < sourceChannels; ++ch) {
+        auxBuffer.addFrom(0, 0, source, ch, 0, numSamples, channelGain);
+    }
 
-    filter.processBlock(auxBuffer, numSamples);
+    auxBuffer.applyGain(Decibels::decibelsToGain(sidechainGain));
 
+    if(!filter.isBypassed())
+        filter.processBlock(auxBuffer, numSamples);
+
+    updateProbe(inputProbe, auxBuffer, numSamples);
     inputVisualiser.pushBuffer(auxBuffer);
+
     drywetter.copyDrySignal(mainBuffer);
     compressor.processBlock(mainBuffer, auxBuffer);
     drywetter.mixDrySignal(mainBuffer);
+
     gainReductionVisualiser.pushBuffer(auxBuffer);
     outputVisualiser.pushBuffer(mainBuffer);
-    gainReductionProbe.set(jmax(auxBuffer.getMagnitude(0, numSamples), gainReductionProbe.get()));
-    outputProbe.set(jmax(mainBuffer.getMagnitude(0, numSamples), outputProbe.get()));
+    updateProbe(gainReductionProbe, auxBuffer, numSamples);
+    updateProbe(outputProbe, mainBuffer, numSamples);
 }
 
 bool comprixAudioProcessor::hasEditor() const {
@@ -170,7 +180,7 @@ void comprixAudioProcessor::parameterChanged(const String &paramID, float newVal
         inputVisualiser.setBufferSize(newZoom);
         gainReductionVisualiser.setBufferSize(newZoom);
     } else if(paramID == Parameters::nameSidechainGain) {
-        externalSidechainGain = newValue;
+        sidechainGain = newValue;
     } else if(paramID == Parameters::nameBypass) {
         bypass = newValue > 0.5f;
     }

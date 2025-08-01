@@ -58,6 +58,8 @@ class StereoFilter {
     }
     void setBypass(const bool newValue) { isActive = newValue; }
 
+    bool isBypassed() const { return !isActive; }
+
   private:
     void updateCoefficients() {
         dsp::IIR::Coefficients<float>::Ptr iirCoefficients;

@@ -28,7 +28,6 @@ class SidechainSection : public juce::Component {
         sidechainListenButton.setButtonText("SOLO");
         sidechainListenButton.setClickingTogglesState(true);
         addAndMakeVisible(sidechainListenButton);
-        sidechainListenButton.setEnabled(false);
 
         filterEnabledButton.setButtonText("Filter");
         filterEnabledButton.setClickingTogglesState(true);
@@ -93,13 +92,6 @@ class SidechainSection : public juce::Component {
         filterEnabledAttachment.reset(new ButtonAttachment(vts, Parameters::nameFilterSwitch, filterEnabledButton));
 
         filterTypeAttachment.reset(new ComboBoxAttachment(vts, Parameters::nameFilterType, filterTypeComboBox));
-
-        externalSidechainButton.onClick = [this]() {
-            sidechainListenButton.setEnabled(externalSidechainButton.getToggleState());
-            if(!externalSidechainButton.getToggleState() && sidechainListenButton.getToggleState()) {
-                sidechainListenButton.setToggleState(false, juce::dontSendNotification);
-            }
-        };
     }
 
     ~SidechainSection() override {

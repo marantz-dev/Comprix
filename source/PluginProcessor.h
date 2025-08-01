@@ -43,6 +43,18 @@ class comprixAudioProcessor : public juce::AudioProcessor, public AudioProcessor
     void getStateInformation(juce::MemoryBlock &destData) override;
     void setStateInformation(const void *data, int sizeInBytes) override;
 
+    // Lambda for updating probes with magnitude
+    void updateProbe(juce::Atomic<float> &probe, const juce::AudioBuffer<float> &buf, int numSamples) {
+        probe.set(jmax(buf.getMagnitude(0, numSamples), probe.get()));
+    }
+
+    // Lambda for clearing visualizers in sidechain listen mode
+    void clearVisualizersForSidechain() {
+        gainReductionVisualiser.clear();
+        gainReductionProbe.set(1.0f);
+        outputVisualiser.clear();
+    }
+
     AudioVisualiserComponent outputVisualiser;
     AudioVisualiserComponent inputVisualiser;
     AudioVisualiserComponent gainReductionVisualiser;
@@ -60,7 +72,7 @@ class comprixAudioProcessor : public juce::AudioProcessor, public AudioProcessor
     bool sidechainListen = false;
     // bool filterEnabled = false;
     bool bypass = false;
-    float externalSidechainGain = 0.0f;
+    float sidechainGain = 0.0f;
 
     AnalogCompressor compressor;
     AudioBuffer<float> auxBuffer;
