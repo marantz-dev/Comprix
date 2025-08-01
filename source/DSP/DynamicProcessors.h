@@ -2,6 +2,8 @@
 #pragma once
 #include <JuceHeader.h>
 #include "Detectors.h"
+#include "juce_audio_basics/juce_audio_basics.h"
+#include "juce_core/system/juce_PlatformDefs.h"
 
 enum detectorType { RMS, Peak };
 class AnalogCompressor {
@@ -55,7 +57,7 @@ class AnalogCompressor {
 
     void setDetectorType(detectorType newDetector) { currentDetector = newDetector; }
 
-    void setKneeWidth(float newKneeWidth) { kneeWidth = newKneeWidth; }
+    void setKneeWidth(float newKneeWidth) { kneeWidth.setTargetValue(newKneeWidth); }
 
   private:
     void smoothGainEnvelope(AudioBuffer<float> &buffer, int numSamples) {

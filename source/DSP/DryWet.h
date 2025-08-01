@@ -34,6 +34,7 @@ class DryWet {
 
         auto dryData = drySignal.getArrayOfWritePointers();
         auto destData = destinationBuffer.getArrayOfWritePointers();
+
         for(int s = 0; s < numSamples; ++s) {
             auto currentDryWetRatio = dryWetRatio.getNextValue();
             for(int ch = 0; ch < numCh; ++ch) {

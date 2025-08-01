@@ -95,9 +95,7 @@ void comprixAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce:
     updateProbe(outputProbe, mainBuffer, numSamples);
 }
 
-bool comprixAudioProcessor::hasEditor() const {
-    return true; // (change this to false if you choose to not supply an editor)
-}
+bool comprixAudioProcessor::hasEditor() const { return true; }
 
 juce::AudioProcessorEditor *comprixAudioProcessor::createEditor() {
     return new comprixAudioProcessorEditor(*this, parameters);
@@ -151,9 +149,7 @@ void comprixAudioProcessor::parameterChanged(const String &paramID, float newVal
         switch(detectorIndex) {
         case 0: compressor.setDetectorType(RMS); break;
         case 1: compressor.setDetectorType(Peak); break;
-        default:
-            compressor.setDetectorType(RMS); // Fallback to RMS
-            break;
+        default: compressor.setDetectorType(RMS); break;
         }
     } else if(paramID == Parameters::nameKnee) {
         compressor.setKneeWidth(newValue);
@@ -167,7 +163,7 @@ void comprixAudioProcessor::parameterChanged(const String &paramID, float newVal
         case 0: filter.setFilterType(LowPass); break;
         case 1: filter.setFilterType(HighPass); break;
         case 2: filter.setFilterType(BandPass); break;
-        default: filter.setFilterType(LowPass); // Fallback to Low Pass
+        default: filter.setFilterType(LowPass);
         }
     } else if(paramID == Parameters::nameFilterSwitch) {
         filter.setBypass(newValue > 0.5f);

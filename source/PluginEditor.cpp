@@ -27,12 +27,10 @@ comprixAudioProcessorEditor::comprixAudioProcessorEditor(comprixAudioProcessor &
 
     setSize(1000, 600);
 
-    // TO BE CONTINUED...
+    // TODO:
     // setResizable(true, true);
-    //
     // // Set min and max resize limits
     // setResizeLimits(1000, 700, 1600, 1200); // preserves 3:2 ratio boundaries
-    //
     // // Maintain aspect ratio: width / height = 3 / 2
     // getConstrainer()->setFixedAspectRatio(3.0 / 2.0);
 }
@@ -59,7 +57,7 @@ void comprixAudioProcessorEditor::paint(juce::Graphics &g) {
     auto headerBounds = bounds.removeFromTop(height * 0.06f);
     headerBounds.removeFromLeft(40);
     g.setFont(30.0f);
-    g.drawFittedText("Comprix", headerBounds, juce::Justification::left, 1);
+    g.drawFittedText("COMPRIX", headerBounds, juce::Justification::left, 1);
 }
 
 void comprixAudioProcessorEditor::resized() {
