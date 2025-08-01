@@ -2,7 +2,7 @@
 #include <JuceHeader.h>
 
 #define FPS 30
-#define RT 0.3f
+#define RT 0.15f
 #define DB_FLOOR -48.0f
 
 // #########################
@@ -43,7 +43,7 @@ class Meter : public juce::Component, public Timer {
 class GainReductionMeter : public Meter {
   public:
     GainReductionMeter() {
-        alpha = exp(-1.0f / (FPS * RT));
+        alpha = exp(-1.0f / (FPS * 0.05));
         startTimerHz(FPS);
     }
 
@@ -58,7 +58,7 @@ class GainReductionMeter : public Meter {
         if(probedSignal != nullptr) {
             auto envelopeSnapshot = probedSignal->get();
 
-            if(envelopeSnapshot < lastGainReduction) {
+            if(envelopeSnapshot > lastGainReduction) {
                 lastGainReduction = envelopeSnapshot;
             } else {
                 lastGainReduction = lastGainReduction * alpha + envelopeSnapshot * (1.0f - alpha);
@@ -69,7 +69,7 @@ class GainReductionMeter : public Meter {
 
             auto gainReductionDB = Decibels::gainToDecibels(jmax(0.001f, lastGainReduction));
 
-            barHeight = jmap(gainReductionDB, DB_FLOOR, 0.0f, Height - 2.0f, 0.0f);
+            barHeight = jmap(gainReductionDB, -48.0f, 0.0f, Height - 2.0f, 0.0f);
             barHeight = jlimit(0.0f, Height - 2.0f, barHeight);
 
             offset = flipped ? Height - barHeight - 1.0f : 1.0f;

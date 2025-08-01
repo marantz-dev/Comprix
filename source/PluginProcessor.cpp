@@ -43,19 +43,23 @@ void comprixAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce:
     const int numSamples = buffer.getNumSamples();
     const int numChannels = mainBuffer.getNumChannels();
 
-    if(bypass)
+    if(bypass) {
+        gainReductionProbe.set(1.0f);
         return;
+    }
 
     if(sidechainListen) {
         const int scChannels = sidechainBuffer.getNumChannels();
         const int copyChannels = jmin(scChannels, numChannels);
         for(int ch = 0; ch < copyChannels; ++ch)
             mainBuffer.copyFrom(ch, 0, sidechainBuffer, ch, 0, numSamples);
+        mainBuffer.applyGain(Decibels::decibelsToGain(externalSidechainGain));
 
         filter.processBlock(mainBuffer, numSamples);
-        inputVisualiser.clear();
+        inputVisualiser.pushBuffer(mainBuffer);
         gainReductionVisualiser.clear();
-        outputVisualiser.pushBuffer(mainBuffer);
+        gainReductionProbe.set(1.0f);
+        outputVisualiser.clear();
 
         return;
     }
