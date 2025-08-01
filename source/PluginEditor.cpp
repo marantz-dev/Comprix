@@ -1,5 +1,8 @@
+#include "PluginParameters.h"
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include "UIutils.h"
+#include "juce_audio_processors/juce_audio_processors.h"
 
 comprixAudioProcessorEditor::comprixAudioProcessorEditor(comprixAudioProcessor &p, AudioProcessorValueTreeState &vts)
     : AudioProcessorEditor(&p), audioProcessor(p), valueTreeState(vts), sidechainSection(vts, p),
@@ -14,6 +17,13 @@ comprixAudioProcessorEditor::comprixAudioProcessorEditor(comprixAudioProcessor &
     scopeSection.setLookAndFeel(&theme);
 
     addAndMakeVisible(meteringSection);
+
+    UIutils::setupToggleButton(bypassButton, "BYPASS");
+    bypassButton.setLookAndFeel(&theme);
+    addAndMakeVisible(bypassButton);
+
+    bypassButtonAttachment.reset(
+     new AudioProcessorValueTreeState::ButtonAttachment(vts, Parameters::nameBypass, bypassButton));
 
     setSize(1000, 600);
 
@@ -30,6 +40,9 @@ comprixAudioProcessorEditor::comprixAudioProcessorEditor(comprixAudioProcessor &
 comprixAudioProcessorEditor::~comprixAudioProcessorEditor() {
     this->setLookAndFeel(nullptr);
 
+    bypassButtonAttachment.reset();
+
+    bypassButton.setLookAndFeel(nullptr);
     sidechainSection.setLookAndFeel(nullptr);
     compressorSection.setLookAndFeel(nullptr);
     scopeSection.setLookAndFeel(nullptr);
@@ -51,6 +64,14 @@ void comprixAudioProcessorEditor::paint(juce::Graphics &g) {
 
 void comprixAudioProcessorEditor::resized() {
     auto bounds = getLocalBounds();
+
+    const int bypasButtonHeight = 30;
+    const int bypasButtonWidth = 100;
+    auto buttonBounds = bounds;
+    buttonBounds.removeFromTop(5);
+    buttonBounds.removeFromLeft(bounds.getWidth() * 0.88);
+    bypassButton.setBounds(buttonBounds.withSize(bypasButtonWidth, bypasButtonHeight));
+
     bounds.removeFromTop(bounds.getHeight() * 0.03f);
     bounds.reduce(20, 20);
 

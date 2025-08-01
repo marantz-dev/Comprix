@@ -20,6 +20,7 @@ namespace Parameters {
     static const String nameDryWet = "DWR";
     static const String nameScopeZoom = "SCT";
     static const String nameSidechainGain = "SCG";
+    static const String nameBypass = "BP";
 
     static const float defaultMakeup = 0.0f;
     static const float defaultThreshold = 0.0f;
@@ -149,6 +150,8 @@ namespace Parameters {
          ParameterID(nameSidechainGain, id++), "Sidechain Gain (dB)",
          NormalisableRange<float>(minSidechainGain, maxSidechainGain, stepSizeSidechainGain, skewFactorSidechainGain),
          defaultSidechainGain));
+
+        params.push_back(std::make_unique<AudioParameterBool>(ParameterID(nameBypass, id++), "Bypass", false));
 
         return {params.begin(), params.end()};
     }

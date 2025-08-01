@@ -24,6 +24,9 @@ class StereoFilter {
     void releaseResources() {}
 
     void processBlock(AudioBuffer<float> &buffer, const int numSamples) {
+        if(bypass) {
+            return;
+        }
         dsp::AudioBlock<float> block(buffer.getArrayOfWritePointers(), buffer.getNumChannels(), buffer.getNumSamples());
 
         for(int ch = 0; ch < buffer.getNumChannels(); ++ch) {
@@ -53,6 +56,7 @@ class StereoFilter {
             iirFilters.getUnchecked(i)->reset();
         }
     }
+    void setBypass(const bool newValue) { bypass = newValue; }
 
   private:
     void updateCoefficients() {
@@ -79,6 +83,8 @@ class StereoFilter {
     double frequency;
     double quality;
     double sampleRate = 48000;
+
+    bool bypass = false;
 
     FilterType filterType;
 

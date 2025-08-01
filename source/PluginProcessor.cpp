@@ -43,14 +43,16 @@ void comprixAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce:
     const int numSamples = buffer.getNumSamples();
     const int numChannels = mainBuffer.getNumChannels();
 
+    if(bypass)
+        return;
+
     if(sidechainListen) {
         const int scChannels = sidechainBuffer.getNumChannels();
         const int copyChannels = jmin(scChannels, numChannels);
         for(int ch = 0; ch < copyChannels; ++ch)
             mainBuffer.copyFrom(ch, 0, sidechainBuffer, ch, 0, numSamples);
 
-        if(filterEnabled)
-            filter.processBlock(mainBuffer, numSamples);
+        filter.processBlock(mainBuffer, numSamples);
         inputVisualiser.clear();
         gainReductionVisualiser.clear();
         outputVisualiser.pushBuffer(mainBuffer);
@@ -64,18 +66,15 @@ void comprixAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce:
     for(int ch = 0; ch < sourceChannels; ++ch)
         auxBuffer.addFrom(0, 0, source, ch, 0, numSamples, 1.0f / sourceChannels);
 
-    auxBuffer.applyGain(Decibels::decibelsToGain(sideChainGain));
+    auxBuffer.applyGain(Decibels::decibelsToGain(externalSidechainGain));
     inputProbe.set(jmax(auxBuffer.getMagnitude(0, numSamples), inputProbe.get()));
 
-    if(filterEnabled)
-        filter.processBlock(auxBuffer, numSamples);
+    filter.processBlock(auxBuffer, numSamples);
 
     inputVisualiser.pushBuffer(auxBuffer);
-
     drywetter.copyDrySignal(mainBuffer);
     compressor.processBlock(mainBuffer, auxBuffer);
     drywetter.mixDrySignal(mainBuffer);
-
     gainReductionVisualiser.pushBuffer(auxBuffer);
     outputVisualiser.pushBuffer(mainBuffer);
     gainReductionProbe.set(jmax(auxBuffer.getMagnitude(0, numSamples), gainReductionProbe.get()));
@@ -157,7 +156,7 @@ void comprixAudioProcessor::parameterChanged(const String &paramID, float newVal
         default: filter.setFilterType(LowPass); // Fallback to Low Pass
         }
     } else if(paramID == Parameters::nameFilterSwitch) {
-        filterEnabled = newValue > 0.5f;
+        filter.setBypass(newValue > 0.5f);
     } else if(paramID == Parameters::nameDryWet) {
         drywetter.setDWRatio(newValue);
     } else if(paramID == Parameters::nameScopeZoom) {
@@ -167,7 +166,9 @@ void comprixAudioProcessor::parameterChanged(const String &paramID, float newVal
         inputVisualiser.setBufferSize(newZoom);
         gainReductionVisualiser.setBufferSize(newZoom);
     } else if(paramID == Parameters::nameSidechainGain) {
-        sideChainGain = newValue;
+        externalSidechainGain = newValue;
+    } else if(paramID == Parameters::nameBypass) {
+        bypass = newValue > 0.5f;
     }
 }
 

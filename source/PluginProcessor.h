@@ -58,8 +58,9 @@ class comprixAudioProcessor : public juce::AudioProcessor, public AudioProcessor
 
     bool useExternalSidechain = false;
     bool sidechainListen = false;
-    bool filterEnabled = false;
-    float sideChainGain = 0.0f;
+    // bool filterEnabled = false;
+    bool bypass = false;
+    float externalSidechainGain = 0.0f;
 
     AnalogCompressor compressor;
     AudioBuffer<float> auxBuffer;
