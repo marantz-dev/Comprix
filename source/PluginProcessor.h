@@ -4,10 +4,10 @@
 #include "Filters.h"
 #include "DryWet.h"
 
-class comprixAudioProcessor : public juce::AudioProcessor, public AudioProcessorValueTreeState::Listener {
+class ComprixAudioProcessor : public juce::AudioProcessor, public AudioProcessorValueTreeState::Listener {
   public:
-    comprixAudioProcessor();
-    ~comprixAudioProcessor() override;
+    ComprixAudioProcessor();
+    ~ComprixAudioProcessor() override;
 
     void prepareToPlay(double sampleRate, int samplesPerBlock) override;
     void releaseResources() override;
@@ -76,5 +76,5 @@ class comprixAudioProcessor : public juce::AudioProcessor, public AudioProcessor
     StereoFilter filter;
     DryWet drywetter;
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(comprixAudioProcessor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ComprixAudioProcessor)
 };

@@ -4,7 +4,7 @@
 #include "UIutils.h"
 #include "juce_audio_processors/juce_audio_processors.h"
 
-comprixAudioProcessorEditor::comprixAudioProcessorEditor(comprixAudioProcessor &p, AudioProcessorValueTreeState &vts)
+ComprixAudioProcessorEditor::ComprixAudioProcessorEditor(ComprixAudioProcessor &p, AudioProcessorValueTreeState &vts)
     : AudioProcessorEditor(&p), audioProcessor(p), valueTreeState(vts), sidechainSection(vts, p),
       compressorSection(vts), scopeSection(vts, p), meteringSection(vts, p) {
     addAndMakeVisible(sidechainSection);
@@ -35,7 +35,7 @@ comprixAudioProcessorEditor::comprixAudioProcessorEditor(comprixAudioProcessor &
     // getConstrainer()->setFixedAspectRatio(3.0 / 2.0);
 }
 
-comprixAudioProcessorEditor::~comprixAudioProcessorEditor() {
+ComprixAudioProcessorEditor::~ComprixAudioProcessorEditor() {
     this->setLookAndFeel(nullptr);
 
     bypassButtonAttachment.reset();
@@ -47,7 +47,7 @@ comprixAudioProcessorEditor::~comprixAudioProcessorEditor() {
     meteringSection.setLookAndFeel(nullptr);
 }
 
-void comprixAudioProcessorEditor::paint(juce::Graphics &g) {
+void ComprixAudioProcessorEditor::paint(juce::Graphics &g) {
     auto bounds = getLocalBounds();
     auto height = bounds.getHeight();
 
@@ -60,7 +60,7 @@ void comprixAudioProcessorEditor::paint(juce::Graphics &g) {
     g.drawFittedText("COMPRIX", headerBounds, juce::Justification::left, 1);
 }
 
-void comprixAudioProcessorEditor::resized() {
+void ComprixAudioProcessorEditor::resized() {
     auto bounds = getLocalBounds();
 
     const int bypasButtonHeight = 30;

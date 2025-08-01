@@ -7,7 +7,7 @@
 
 class MeteringSection : public juce::Component {
   public:
-    MeteringSection(AudioProcessorValueTreeState &vts, comprixAudioProcessor &p)
+    MeteringSection(AudioProcessorValueTreeState &vts, ComprixAudioProcessor &p)
         : audioProcessor(p), valueTreeState(vts) {
         // Section Border
         addAndMakeVisible(meteringSectionBorder);
@@ -67,7 +67,7 @@ class MeteringSection : public juce::Component {
     }
 
   private:
-    comprixAudioProcessor &audioProcessor;
+    ComprixAudioProcessor &audioProcessor;
     AudioProcessorValueTreeState &valueTreeState;
 
     GroupComponent meteringSectionBorder;

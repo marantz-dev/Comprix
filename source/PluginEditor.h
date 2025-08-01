@@ -12,17 +12,17 @@
 
 typedef AudioProcessorValueTreeState::SliderAttachment SliderAttachment;
 
-class comprixAudioProcessorEditor : public juce::AudioProcessorEditor {
+class ComprixAudioProcessorEditor : public juce::AudioProcessorEditor {
   public:
-    comprixAudioProcessorEditor(comprixAudioProcessor &, AudioProcessorValueTreeState &);
-    ~comprixAudioProcessorEditor() override;
+    ComprixAudioProcessorEditor(ComprixAudioProcessor &, AudioProcessorValueTreeState &);
+    ~ComprixAudioProcessorEditor() override;
 
     //==============================================================================
     void paint(juce::Graphics &) override;
     void resized() override;
 
   private:
-    comprixAudioProcessor &audioProcessor;
+    ComprixAudioProcessor &audioProcessor;
     AudioProcessorValueTreeState &valueTreeState;
 
     SidechainSection sidechainSection;
@@ -36,5 +36,5 @@ class comprixAudioProcessorEditor : public juce::AudioProcessorEditor {
     using ButtonAttachment = AudioProcessorValueTreeState::ButtonAttachment;
     std::unique_ptr<ButtonAttachment> bypassButtonAttachment;
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(comprixAudioProcessorEditor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ComprixAudioProcessorEditor)
 };

@@ -4,7 +4,7 @@
 #include "juce_core/juce_core.h"
 
 //==============================================================================
-comprixAudioProcessor::comprixAudioProcessor()
+ComprixAudioProcessor::ComprixAudioProcessor()
     : AudioProcessor(BusesProperties()
                       .withInput("Input", AudioChannelSet::stereo(), true)
                       .withInput("Sidechain", AudioChannelSet::stereo(), true)
@@ -16,10 +16,10 @@ comprixAudioProcessor::comprixAudioProcessor()
     Parameters::addListeners(parameters, this);
 }
 
-comprixAudioProcessor::~comprixAudioProcessor() {}
+ComprixAudioProcessor::~ComprixAudioProcessor() {}
 
 //==============================================================================
-void comprixAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock) {
+void ComprixAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock) {
     compressor.prepareToPlay(sampleRate);
     auxBuffer.setSize(1, samplesPerBlock);
     auxBuffer.clear();
@@ -27,7 +27,7 @@ void comprixAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock
     drywetter.prepareToPlay(samplesPerBlock, sampleRate);
 }
 
-void comprixAudioProcessor::releaseResources() {
+void ComprixAudioProcessor::releaseResources() {
     compressor.releaseResources();
     auxBuffer.setSize(0, 0);
     drywetter.releaseResources();
@@ -35,7 +35,7 @@ void comprixAudioProcessor::releaseResources() {
     inputVisualiser.clear();
     gainReductionVisualiser.clear();
 }
-void comprixAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::MidiBuffer &midiMessages) {
+void ComprixAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::MidiBuffer &midiMessages) {
     juce::ScopedNoDenormals noDenormals;
 
     auto mainBuffer = getBusBuffer(buffer, true, 0);
@@ -95,25 +95,25 @@ void comprixAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce:
     updateProbe(outputProbe, mainBuffer, numSamples);
 }
 
-bool comprixAudioProcessor::hasEditor() const { return true; }
+bool ComprixAudioProcessor::hasEditor() const { return true; }
 
-juce::AudioProcessorEditor *comprixAudioProcessor::createEditor() {
-    return new comprixAudioProcessorEditor(*this, parameters);
+juce::AudioProcessorEditor *ComprixAudioProcessor::createEditor() {
+    return new ComprixAudioProcessorEditor(*this, parameters);
 }
 
-void comprixAudioProcessor::getStateInformation(juce::MemoryBlock &destData) {
+void ComprixAudioProcessor::getStateInformation(juce::MemoryBlock &destData) {
     auto state = parameters.copyState();
     std::unique_ptr<XmlElement> xml(state.createXml());
     copyXmlToBinary(*xml, destData);
 }
 
-void comprixAudioProcessor::setStateInformation(const void *data, int sizeInBytes) {
+void ComprixAudioProcessor::setStateInformation(const void *data, int sizeInBytes) {
     std::unique_ptr<XmlElement> xmlState(getXmlFromBinary(data, sizeInBytes));
     if(xmlState.get() != nullptr)
         if(xmlState->hasTagName(parameters.state.getType()))
             parameters.replaceState(ValueTree::fromXml(*xmlState));
 }
-bool comprixAudioProcessor::isBusesLayoutSupported(const BusesLayout &layouts) const {
+bool ComprixAudioProcessor::isBusesLayoutSupported(const BusesLayout &layouts) const {
     if(layouts.getMainOutputChannelSet() != juce::AudioChannelSet::mono()
        && layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
         return false;
@@ -129,7 +129,7 @@ bool comprixAudioProcessor::isBusesLayoutSupported(const BusesLayout &layouts) c
     return true;
 }
 
-void comprixAudioProcessor::parameterChanged(const String &paramID, float newValue) {
+void ComprixAudioProcessor::parameterChanged(const String &paramID, float newValue) {
     if(paramID == Parameters::nameAttack) {
         compressor.setAttackTime(newValue);
     } else if(paramID == Parameters::nameRelease) {
@@ -182,4 +182,4 @@ void comprixAudioProcessor::parameterChanged(const String &paramID, float newVal
     }
 }
 
-juce::AudioProcessor *JUCE_CALLTYPE createPluginFilter() { return new comprixAudioProcessor(); }
+juce::AudioProcessor *JUCE_CALLTYPE createPluginFilter() { return new ComprixAudioProcessor(); }

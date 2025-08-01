@@ -10,7 +10,7 @@ using SliderAttachment = juce::AudioProcessorValueTreeState::SliderAttachment;
 
 class ScopeSection : public juce::Component {
   public:
-    ScopeSection(AudioProcessorValueTreeState &vts, comprixAudioProcessor &p) : audioProcessor(p), valueTreeState(vts) {
+    ScopeSection(AudioProcessorValueTreeState &vts, ComprixAudioProcessor &p) : audioProcessor(p), valueTreeState(vts) {
         // ########## BORDERS ##########
         addAndMakeVisible(scopeSectionBorder);
         scopeSectionBorder.setTextLabelPosition(juce::Justification::centredTop);
@@ -125,7 +125,7 @@ class ScopeSection : public juce::Component {
         addAndMakeVisible(button);
     }
 
-    comprixAudioProcessor &audioProcessor;
+    ComprixAudioProcessor &audioProcessor;
     AudioProcessorValueTreeState &valueTreeState;
 
     juce::GroupComponent scopeSectionBorder;
