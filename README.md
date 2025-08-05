@@ -62,13 +62,6 @@ Found a bug or have a feature request? Open an issue or submit a pull request! A
 
 ⸻
 
-📄 License
-
-This project is licensed under the MIT License.
-See the LICENSE file for more details.
-
-⸻
-
 ✨ Credits
 	•	Developed with JUCE 
 	•	Big thanks to the open-source DSP community
