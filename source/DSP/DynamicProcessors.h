@@ -67,7 +67,7 @@ class AnalogCompressor {
             auto alphaAtk = alphaCoeffAttack.getNextValue();
             auto alphaRel = alphaCoeffRelease.getNextValue();
 
-            if(sidechainData[smp] > predGain)
+            if(sidechainData[smp] < predGain)
                 sidechainData[smp] = alphaAtk * predGain + (1.0f - alphaAtk) * sidechainData[smp];
             else
                 sidechainData[smp] = alphaRel * predGain + (1.0f - alphaRel) * sidechainData[smp];

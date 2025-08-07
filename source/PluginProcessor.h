@@ -3,6 +3,8 @@
 #include "DynamicProcessors.h"
 #include "Filters.h"
 #include "DryWet.h"
+#include "juce_audio_basics/juce_audio_basics.h"
+#include "GainReductionVisualizer.h"
 
 class ComprixAudioProcessor : public juce::AudioProcessor, public AudioProcessorValueTreeState::Listener {
   public:
@@ -53,9 +55,21 @@ class ComprixAudioProcessor : public juce::AudioProcessor, public AudioProcessor
         outputVisualiser.clear();
     }
 
+    void applySidechainGain(AudioBuffer<float> &buffer) {
+        auto data = buffer.getArrayOfWritePointers();
+        for(int smp = 0; smp < buffer.getNumSamples(); ++smp) {
+            auto gain = sidechainGain.getNextValue();
+            for(int ch = 0; ch < buffer.getNumChannels(); ++ch) {
+                data[ch][smp] *= gain;
+            }
+        }
+    }
+
+    void setSidechainGain(bool listen) {}
+
     AudioVisualiserComponent outputVisualiser;
     AudioVisualiserComponent inputVisualiser;
-    AudioVisualiserComponent gainReductionVisualiser;
+    GainReductionVisualiser gainReductionVisualiser;
 
     Atomic<float> inputProbe;
     Atomic<float> outputProbe;
@@ -69,7 +83,7 @@ class ComprixAudioProcessor : public juce::AudioProcessor, public AudioProcessor
     bool useExternalSidechain = false;
     bool sidechainListen = false;
     bool bypass = false;
-    float sidechainGain = 0.0f;
+    SmoothedValue<float, ValueSmoothingTypes::Linear> sidechainGain;
 
     AnalogCompressor compressor;
     AudioBuffer<float> auxBuffer;

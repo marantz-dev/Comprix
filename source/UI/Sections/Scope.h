@@ -28,8 +28,7 @@ class ScopeSection : public juce::Component {
         setupVisualiser(audioProcessor.inputVisualiser, juce::Colours::transparentBlack, Colours::grey.darker());
         setupVisualiser(audioProcessor.outputVisualiser, juce::Colours::transparentBlack,
                         juce::Colours::transparentWhite.withAlpha(0.8f));
-        setupVisualiser(audioProcessor.gainReductionVisualiser, juce::Colours::transparentBlack,
-                        Colours::yellow.brighter(0.1f));
+        setupVisualiser(audioProcessor.gainReductionVisualiser, juce::Colours::transparentBlack, Colours::orange);
 
         // ############################
         // #                          #
@@ -93,7 +92,7 @@ class ScopeSection : public juce::Component {
         outButton.setBounds(
          scopeControlsSectionBounds.removeFromTop(buttonHeight).withSizeKeepingCentre(buttonWidth, buttonHeight));
 
-        scopeControlsSectionBounds.removeFromTop(15); // spacing before TIME
+        scopeControlsSectionBounds.removeFromTop(15);
         scopeZoomLabel.setBounds(scopeControlsSectionBounds.removeFromTop(20));
         scopeZoomSlider.setBounds(scopeControlsSectionBounds.removeFromTop(sliderHeight));
 

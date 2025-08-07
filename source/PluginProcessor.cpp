@@ -1,6 +1,7 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 #include "PluginParameters.h"
+#include "juce_audio_basics/juce_audio_basics.h"
 #include "juce_core/juce_core.h"
 
 //==============================================================================
@@ -25,6 +26,7 @@ void ComprixAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock
     auxBuffer.clear();
     filter.prepareToPlay(sampleRate);
     drywetter.prepareToPlay(samplesPerBlock, sampleRate);
+    sidechainGain.setCurrentAndTargetValue(1.0f);
 }
 
 void ComprixAudioProcessor::releaseResources() {
@@ -38,15 +40,15 @@ void ComprixAudioProcessor::releaseResources() {
 void ComprixAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::MidiBuffer &midiMessages) {
     juce::ScopedNoDenormals noDenormals;
 
-    auto mainBuffer = getBusBuffer(buffer, true, 0);
-    auto sidechainBuffer = getBusBuffer(buffer, true, 1);
-    const int numSamples = buffer.getNumSamples();
-    const int numChannels = mainBuffer.getNumChannels();
-
     if(bypass) {
         gainReductionProbe.set(1.0f);
         return;
     }
+
+    auto mainBuffer = getBusBuffer(buffer, true, 0);
+    auto sidechainBuffer = getBusBuffer(buffer, true, 1);
+    const int numSamples = buffer.getNumSamples();
+    const int numChannels = mainBuffer.getNumChannels();
 
     const auto &source
      = (useExternalSidechain) && (sidechainBuffer.getNumChannels() > 0) ? sidechainBuffer : mainBuffer;
@@ -59,7 +61,7 @@ void ComprixAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce:
             }
         }
 
-        mainBuffer.applyGain(Decibels::decibelsToGain(sidechainGain));
+        applySidechainGain(mainBuffer);
 
         if(!filter.isBypassed())
             filter.processBlock(mainBuffer, numSamples);
@@ -77,7 +79,7 @@ void ComprixAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce:
         auxBuffer.addFrom(0, 0, source, ch, 0, numSamples, channelGain);
     }
 
-    auxBuffer.applyGain(Decibels::decibelsToGain(sidechainGain));
+    applySidechainGain(auxBuffer);
 
     if(!filter.isBypassed())
         filter.processBlock(auxBuffer, numSamples);
@@ -89,10 +91,11 @@ void ComprixAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce:
     compressor.processBlock(mainBuffer, auxBuffer);
     drywetter.mixDrySignal(mainBuffer);
 
-    gainReductionVisualiser.pushBuffer(auxBuffer);
-    outputVisualiser.pushBuffer(mainBuffer);
-    updateProbe(gainReductionProbe, auxBuffer, numSamples);
     updateProbe(outputProbe, mainBuffer, numSamples);
+    outputVisualiser.pushBuffer(mainBuffer);
+
+    gainReductionVisualiser.pushBuffer(auxBuffer);
+    updateProbe(gainReductionProbe, auxBuffer, numSamples);
 }
 
 bool ComprixAudioProcessor::hasEditor() const { return true; }
@@ -170,13 +173,12 @@ void ComprixAudioProcessor::parameterChanged(const String &paramID, float newVal
     } else if(paramID == Parameters::nameDryWet) {
         drywetter.setDWRatio(newValue);
     } else if(paramID == Parameters::nameScopeZoom) {
-        int newZoom
-         = static_cast<int>(128 + (2048 - 128) * ((100 - newValue) / 100.0f)); // Convert percentage to a factor;
+        int newZoom = static_cast<int>(128 + (2048 - 128) * ((100 - newValue) / 100.0f));
         outputVisualiser.setBufferSize(newZoom);
         inputVisualiser.setBufferSize(newZoom);
         gainReductionVisualiser.setBufferSize(newZoom);
     } else if(paramID == Parameters::nameSidechainGain) {
-        sidechainGain = newValue;
+        sidechainGain.setTargetValue(Decibels::decibelsToGain(newValue));
     } else if(paramID == Parameters::nameBypass) {
         bypass = newValue > 0.5f;
     }

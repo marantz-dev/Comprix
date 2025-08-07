@@ -21,7 +21,7 @@ class Theme : public juce::LookAndFeel_V4 {
         auto numTicks = 11;
         for(int i = 0; i < numTicks; ++i) {
             auto tickAngle = rotaryStartAngle + (float)i / (numTicks - 1) * (rotaryEndAngle - rotaryStartAngle);
-            auto tickLength = (i % 2 == 0) ? 6.0f : 3.0f; // Major/minor ticks
+            auto tickLength = (i % 2 == 0) ? 6.0f : 3.0f;
             auto tickThickness = (i % 2 == 0) ? 1.2f : 0.8f;
 
             auto innerX
@@ -114,7 +114,8 @@ class Theme : public juce::LookAndFeel_V4 {
 
         if(button.getButtonText().isNotEmpty()) {
             g.setColour(isToggleOn ? textOnColor : textOffColor);
-            g.setFont(juce::FontOptions(bounds.getHeight() * 0.5f, juce::Font::plain));
+            // g.setFont(juce::FontOptions(bounds.getHeight() * 0.5f, juce::Font::plain));
+            g.setFont(juce::Font(bounds.getHeight() * 0.5f, juce::Font::plain));
             g.drawFittedText(button.getButtonText(), bounds.toNearestInt(), juce::Justification::centred, 1);
         }
     }
