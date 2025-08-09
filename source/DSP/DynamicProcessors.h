@@ -112,14 +112,15 @@ class AnalogCompressor {
 
         for(int ch = 0; ch < numCh; ++ch) {
             FloatVectorOperations::multiply(mainData[ch], scData, numSamples);
+            makeupGain.applyGain(mainData[ch], numSamples);
         }
 
-        for(int smp = 0; smp < numSamples; ++smp) {
-            auto mkGain = makeupGain.getNextValue();
-            for(int ch = 0; ch < numCh; ++ch) {
-                mainData[ch][smp] *= mkGain;
-            }
-        }
+        // for(int smp = 0; smp < numSamples; ++smp) {
+        //     auto mkGain = makeupGain.getNextValue();
+        //     for(int ch = 0; ch < numCh; ++ch) {
+        //         mainData[ch][smp] *= mkGain;
+        //     }
+        // }
     }
 
     void convertDetectorToDecibels(AudioBuffer<float> &buffer, int numSamples) {

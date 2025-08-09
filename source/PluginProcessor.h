@@ -56,12 +56,17 @@ class ComprixAudioProcessor : public juce::AudioProcessor, public AudioProcessor
     }
 
     void applySidechainGain(AudioBuffer<float> &buffer) {
+        // auto data = buffer.getArrayOfWritePointers();
+        // for(int smp = 0; smp < buffer.getNumSamples(); ++smp) {
+        //     auto gain = sidechainGain.getNextValue();
+        //     for(int ch = 0; ch < buffer.getNumChannels(); ++ch) {
+        //         data[ch][smp] *= gain;
+        //     }
+        // }
         auto data = buffer.getArrayOfWritePointers();
-        for(int smp = 0; smp < buffer.getNumSamples(); ++smp) {
-            auto gain = sidechainGain.getNextValue();
-            for(int ch = 0; ch < buffer.getNumChannels(); ++ch) {
-                data[ch][smp] *= gain;
-            }
+
+        for(int ch = 0; ch < buffer.getNumChannels(); ++ch) {
+            sidechainGain.applyGain(data[ch], buffer.getNumSamples());
         }
     }
 
